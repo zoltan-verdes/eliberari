@@ -1,0 +1,43 @@
+<div class="main">
+  <button [disabled]="isProcessing()" (click)="pornesteProcesare()">
+    {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
+  </button>
+
+  <div class="log-container" #scrollMe>
+    <div *ngFor="let log of logs()" class="log-line">
+      {{ log }}
+    </div>
+    <div *ngIf="logs().length === 0" class="placeholder">
+      Așteptare comandă...
+    </div>
+  </div>
+
+  <div  class="results-container" style="margin-top: 20px;">
+    <h3>Date Extrase</h3>
+    <table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th>Act</th>
+          <th>Firma</th>
+          <th>CUI</th>
+          <th>Nr. Document</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rezultateCompletate()">
+          <td>{{ r.pagina }}</td>
+          <td>{{ r.firma }}</td>
+          <td>{{ r.cui }}</td>
+          <td>{{ r.numar }}</td>
+          <td>{{ r.data }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+
+
+</div>
+

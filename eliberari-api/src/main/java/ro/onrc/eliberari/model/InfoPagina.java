@@ -1,0 +1,49 @@
+package ro.onrc.eliberari.model;
+
+
+
+//import java.time.LocalDate;
+
+/**
+ * Această clasă "cară" datele de la OCR către restul aplicației.
+ */
+public class InfoPagina {
+    private String numar;
+    private String data; // Poți folosi String sau LocalDate dacă vrei să-l formatezi ulterior
+    private String cui;
+    private String firma;
+    private TipPagina tipPag;
+
+    // Constructor, Getters și Setters
+    public InfoPagina(TipPagina tipPag){
+        this.tipPag = tipPag;
+    }
+
+    public InfoPagina(TipPagina tipPag, String numar, String data, String cui, String firma) {
+        this.tipPag = tipPag;
+        this.numar = numar;
+        this.data = data;
+        this.cui = cui;
+        this.firma = firma;
+    }
+
+    public InfoPagina(InfoPagina obCerere) {
+        this.tipPag = obCerere.tipPag;
+        this.numar = obCerere.numar;
+        this.data = obCerere.data;
+        this.cui = obCerere.cui;
+        this.firma = obCerere.firma;
+    }
+
+
+    public String getNumar() { return numar; }
+    public String getData() { return data; }
+    public String getCui() { return cui; }
+    public String getFirma() { return firma; }
+    public TipPagina getPagina(){return tipPag;}
+    
+    @Override
+    public String toString() {
+        return "DocumentInfo{tip"+tipPag+",  numar='" + numar + "', data='" + data + ", cui:"+cui+", firma:"+firma+"'}";
+    }
+}

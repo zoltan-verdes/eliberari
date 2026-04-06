@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "eliberari-api"
+		},
+		{
+			"path": "eliberari-ui"
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}
