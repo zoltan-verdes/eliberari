@@ -16,6 +16,11 @@ import com.google.zxing.common.HybridBinarizer;
 @Service
 public class BarcodeService {
 
+    public String citesteCod(BufferedImage imagine, int x, int y, int w, int h) {
+        BufferedImage zona = imagine.getSubimage(x, y, w, h);
+        return citesteCod(zona);
+    }
+
     public String citesteCod(BufferedImage imagine) {
         try {
             LuminanceSource source = new BufferedImageLuminanceSource(imagine);
