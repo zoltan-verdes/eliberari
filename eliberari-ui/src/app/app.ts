@@ -1,15 +1,17 @@
-import { Component, inject, signal, NgZone, ViewChild, ElementRef, AfterViewChecked, computed } from '@angular/core';
+import { Component, inject, signal, NgZone, computed} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Jurnal } from './jurnal/jurnal';
+import { Rezultat } from "./rezultat/rezultat";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Jurnal, Rezultat],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements AfterViewChecked {
+export class App  {
   private http = inject(HttpClient);
   private zone = inject(NgZone);
   
@@ -19,8 +21,6 @@ export class App implements AfterViewChecked {
   rezultate = signal<any[]>([]);
  
 
-  // Referință către elementul de log pentru autoscroll
-  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
   pornesteProcesare() {
     this.isProcessing.set(true);
@@ -69,14 +69,5 @@ rezultateCompletate = computed(() => {
 });
 
 
-  // Funcție pentru autoscroll la finalul listei
-  ngAfterViewChecked() {        
-    this.scrollToBottom();        
-  } 
 
-  scrollToBottom(): void {
-    try {
-        this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
-    } catch(err) { }                 
-  }
 }

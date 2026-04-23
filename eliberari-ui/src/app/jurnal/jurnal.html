@@ -1,0 +1,11 @@
+<div class="log-container" #scrollMe>
+  @if (logs.length == 0) {
+    <div class="placeholder">Așteptare comandă...</div>
+  } @else {
+    @for (log of logs; track $index) {
+      <div>
+        {{ log }}
+      </div>
+    }
+  }
+</div>

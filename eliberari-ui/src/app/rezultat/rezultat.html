@@ -1,0 +1,31 @@
+ <h3>Date Extrase</h3>
+  <div  class="results-container">
+    <table class="tabel_cereri">
+      <thead>
+        <tr>
+          <th>Nr.cerere</th>
+          <th>Data</th>
+          <th>Firma</th>
+          <th>CUI</th>
+          <th>Inch</th>
+          <th>CI</th>
+          <th>CIM</th>
+          <th>CC</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of date; track r.numar) {
+        <tr>
+          <td>{{ r.numar }}</td>
+          <td>{{ r.data }}</td>
+          <td>{{ r.firma }}</td>
+          <td>{{ r.cui }}</td>
+          <td>{{ r.inch }}</td>
+          <td>{{ r.ci }}</td>
+          <td>{{ r.cim }}</td>
+          <td>{{ r.cc }}</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>

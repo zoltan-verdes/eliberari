@@ -1,0 +1,15 @@
+  .log-container {
+    height: 200px;
+    width: 1000px;
+    background: white;
+    color:black;
+    padding: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    border-radius: 4px;
+    overflow-y: auto; // Activează scroll-ul vertical
+    border: 1px solid #333;
+
+    
+    .placeholder { color: #555; font-style: italic; }
+  }

@@ -44,7 +44,7 @@ public class ProcesorPagina {
             }
         cui = cautaPattern(text, "Cod unic de inregistrare:\\.?\\s*(\\d+)"); // Caută "Nr. 123" sau "Nr 123"
         firma = cautaPattern(text, "Firma:\\.?\\s*(.*)\\s*Sediul"); // Caută "Nr. 123" sau "Nr 123"
-        if (firma.length()>15) firma = firma.substring(0,15);
+        if (firma.length()>20) firma = firma.substring(0,20);
         }
 
 

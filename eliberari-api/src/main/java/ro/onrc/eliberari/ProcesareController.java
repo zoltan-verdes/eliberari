@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
+import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
@@ -40,7 +41,7 @@ public class ProcesareController {
         // Rulăm procesarea pe un fir de execuție separat pentru a nu bloca serverul
         new Thread(() -> {
             try {
-                List<InfoPagina> toateRezultatele = new ArrayList<>();
+                List<Cerere> toateRezultatele = new ArrayList<>();
 
                 LogListener sseListener = (mesaj) ->{
                     try {
@@ -62,7 +63,7 @@ public class ProcesareController {
                         // Aici apelezi metoda ta de procesare
                         procesor.proceseaza(f,sseListener); 
 
-                        List<InfoPagina> rezultateFisier = procesor.proceseaza(f, sseListener);
+                        List<Cerere> rezultateFisier = procesor.proceseaza(f, sseListener);
                         toateRezultatele.addAll(rezultateFisier); // LINIE NOUĂ                        
                         
                         sseListener.onLog("Fișier finalizat: " + f.getName());
