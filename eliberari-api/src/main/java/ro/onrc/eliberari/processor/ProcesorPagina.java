@@ -44,8 +44,9 @@ public class ProcesorPagina {
         if (text.contains("CONSTATATOR"))
             tipPag = TipPagina.Constatator;
         System.out.println("Tip act: " + tipPag);
-        barcode = barcodeService.citesteCod(imagine);
-        System.out.println("BARCODE " + barcode);
+        barcode = barcodeService.citesteCod(imagine, 230, 590, 600, 250);
+        if (barcode == null)
+            barcode = barcodeService.citesteCod(imagine, 700, 2600, 350, 450);
 
         if (tipPag != TipPagina.Altele) {
             Matcher potrivire = cautaPatternMultiplu(text,

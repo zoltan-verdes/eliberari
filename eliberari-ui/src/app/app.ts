@@ -1,38 +1,36 @@
-import { Component, inject, signal, NgZone, computed} from '@angular/core';
+import { Component, inject, signal, NgZone, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Jurnal } from './jurnal/jurnal';
-import { Rezultat } from "./rezultat/rezultat";
+import { Rezultat } from './rezultat/rezultat';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, Jurnal, Rezultat],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
-export class App  {
+export class App {
   private http = inject(HttpClient);
   private zone = inject(NgZone);
-  
+
   // Lista de mesaje care vor apărea în box
   logs = signal<string[]>([]);
   isProcessing = signal(false);
   rezultate = signal<any[]>([]);
- 
-
 
   pornesteProcesare() {
     this.isProcessing.set(true);
-    this.logs.set(["Inițializare conexiune..."]);
+    this.logs.set(['Inițializare conexiune...']);
     this.rezultate.set([]);
-  
+
     const eventSource = new EventSource('http://localhost:8080/api/ocr/stream');
-    
+
     eventSource.onmessage = (event) => {
       this.zone.run(() => {
         // event.data contine textul trimis de sseListener.onLog
-        this.logs.update(l => [...l, event.data]);
+        this.logs.update((l) => [...l, event.data]);
       });
     };
 
@@ -43,31 +41,52 @@ export class App  {
       });
     });
 
-
-
+    //Prindem evenimentul de stream imagine
 
     eventSource.onerror = (error) => {
       this.zone.run(() => {
-        console.log("Procesare finalizată sau întreruptă.");
+        console.log('Procesare finalizată sau întreruptă.');
         eventSource.close();
         this.isProcessing.set(false);
       });
     };
+  }
+  imagineCodBare = signal<string | null>(null);
 
+  aduImaginea() {
+    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream-image');
+
+    eventSource.addEventListener('image-data', (event: any) => {
+      this.zone.run(() => {
+        if (!event.data || event.data === 'null') {
+          console.log('Imagine neidentificată');
+          this.imagineCodBare.set(null);
+        } else {
+          // Salvăm string-ul base64 în signal
+          this.imagineCodBare.set(`data:image/png;base64,${event.data}`);
+        }
+        eventSource.close(); // Închidem după ce am primit imaginea
+      });
+    });
+
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
   }
 
-rezultateCompletate = computed(() => {
-  const dateReale = this.rezultate();
-  const randuriGoaleNecesare = Math.max(0, 10 - dateReale.length);
-  
-  // Creăm un array cu restul de rânduri goale
-  const goale = Array(randuriGoaleNecesare).fill({ 
-    pagina: '', firma: '', cui: '', numar: '', data: '' 
+  rezultateCompletate = computed(() => {
+    const dateReale = this.rezultate();
+    const randuriGoaleNecesare = Math.max(0, 10 - dateReale.length);
+
+    // Creăm un array cu restul de rânduri goale
+    const goale = Array(randuriGoaleNecesare).fill({
+      pagina: '',
+      firma: '',
+      cui: '',
+      numar: '',
+      data: '',
+    });
+
+    return [...dateReale, ...goale];
   });
-  
-  return [...dateReale, ...goale];
-});
-
-
-
 }

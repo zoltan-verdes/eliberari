@@ -15,5 +15,13 @@
     &:disabled { background: #ccc; }
   }
 
+  .image-wrapper {
+    min-width: 250px;
+    min-height: 250px;
+    display: inline-block;
+    border: 2px dashed #ff0000; // Bordură roșie să vezi marginile decupării
+    background: white;
+  }
+
 }
 

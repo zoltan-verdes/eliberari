@@ -2,7 +2,6 @@ package ro.onrc.eliberari.service;
 
 import java.awt.image.BufferedImage;
 
-import org.springframework.http.converter.BufferedImageHttpMessageConverter;
 import org.springframework.stereotype.Service;
 
 import com.google.zxing.BinaryBitmap;
@@ -22,14 +21,21 @@ public class BarcodeService {
     }
 
     public String citesteCod(BufferedImage imagine) {
+
         try {
             LuminanceSource source = new BufferedImageLuminanceSource(imagine);
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+            if (bitmap.getWidth() < bitmap.getHeight())
+                bitmap = bitmap.rotateCounterClockwise();
 
             // Încercăm să decodăm
             Result result = new MultiFormatReader().decode(bitmap);
+
+            System.out.println("Barcode text: " + result.getText());
             return result.getText();
+
         } catch (NotFoundException e) {
+            System.out.println("Nu a fost găsit niciun cod de bare pe această pagină");
             // Nu a fost găsit niciun cod de bare pe această pagină
             return null;
         } catch (Exception e) {

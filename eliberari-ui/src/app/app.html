@@ -1,11 +1,15 @@
 <div class="main">
-  <button [disabled]="isProcessing()" (click)="pornesteProcesare()">
-    {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
-  </button>
+  <div style="display: flex">
+    <button [disabled]="isProcessing()" (click)="pornesteProcesare()">
+      {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
+    </button>
 
+    <button (click)="aduImaginea()">' Adu Imaginea'</button>
+  </div>
   <app-jurnal [logs]="logs()"></app-jurnal>
+  <div class="image-wrapper">
+    <img [src]="imagineCodBare()" alt="Cod Bare Procesat" />
+  </div>
 
   <app-rezultat [date]="rezultateCompletate()"></app-rezultat>
-
 </div>
-

@@ -52,7 +52,7 @@ public class InfoPagina {
         return firma;
     }
 
-    public TipPagina getPagina() {
+    public TipPagina getTipPagina() {
         return tipPag;
     }
 

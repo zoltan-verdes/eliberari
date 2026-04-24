@@ -11,10 +11,15 @@ import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 @RestController
 @RequestMapping("/api/ocr")
@@ -34,12 +39,13 @@ public class ProcesareController {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // Conexiune de lungă durată
 
         // Rulăm procesarea pe un fir de execuție separat pentru a nu bloca serverul
-        new Thread(() -> {
+        Thread.ofVirtual().start(() -> {
             try {
                 List<Cerere> toateRezultatele = new ArrayList<>();
 
                 LogListener sseListener = (mesaj) -> {
                     try {
+                        System.out.println(mesaj);
                         emitter.send(SseEmitter.event().data(mesaj));
                     } catch (IOException e) { // Conexiune închisă de client
                     }
@@ -51,10 +57,9 @@ public class ProcesareController {
 
                 if (fisiere != null) {
                     for (File f : fisiere) {
-                        sseListener.onLog("Se procesează fișierul: " + f.getName());
+                        sseListener.onLog("IN streamProcesare(): Se procesează fișierul: " + f.getName());
 
                         // Aici apelezi metoda ta de procesare
-                        procesor.proceseaza(f, sseListener);
 
                         List<Cerere> rezultateFisier = procesor.proceseaza(f, sseListener);
                         toateRezultatele.addAll(rezultateFisier); // LINIE NOUĂ
@@ -71,7 +76,24 @@ public class ProcesareController {
             } catch (Exception e) {
                 emitter.completeWithError(e);
             }
-        }).start();
+        });
+        return emitter;
+    }
+
+    @GetMapping(value = "/stream-image", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    // @GetMapping("/stream-image")
+    public SseEmitter streamImage() throws IOException {
+        SseEmitter emitter = new SseEmitter();
+
+        // Presupunem că ai BufferedImage-ul tău (poate cel rotit)
+        BufferedImage img = procesor.getCodCI();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", baos);
+        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+
+        // Trimitem string-ul prin SSE
+        emitter.send(SseEmitter.event().name("image-data").data(base64Image));
 
         return emitter;
     }
