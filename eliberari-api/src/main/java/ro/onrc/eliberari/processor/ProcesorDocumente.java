@@ -14,8 +14,11 @@ import org.springframework.stereotype.Component;
 import java.awt.image.BufferedImage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 @Component
 public class ProcesorDocumente {
@@ -38,25 +41,50 @@ public class ProcesorDocumente {
 
     public List<Cerere> proceseaza(File fisier, LogListener listener) throws Exception {
 
+        Semaphore ocrLimit = new Semaphore(40);
         List<Cerere> listaCereri = new ArrayList<>();
         File fisier_optimizat = docOptimezer.optimizeazaSiCurata(fisier);
         try (PDDocument document = PDDocument.load(fisier)) {
             List<Integer> paginiCurente = new ArrayList<>();
 
-            int contorDocumente = 1;
+            int nrPagini = document.getNumberOfPages();
             listener.onLog("Avem un document cu " + document.getNumberOfPages() + " pagini");
+
+            InfoPagina[] infoPagini = new InfoPagina[nrPagini];
+            CountDownLatch latch = new CountDownLatch(nrPagini);
+
             InfoPagina infoPag;
 
-            for (int i = 0; i < document.getNumberOfPages(); i++) {
+            for (int i = 0; i < nrPagini; i++) {
+                final int index = i;
+                Thread.ofVirtual().start(() -> {
+                    try {
+                        ocrLimit.acquire();
+                        var imagine = pdfService.randeazaPagina(document, index);
+                        listener.onLog("procesam pagina " + index + " dimensiunea (" + imagine.getWidth() + ","
+                                + imagine.getHeight() + ")");
 
-                var imagine = pdfService.randeazaPagina(document, i);
-                listener.onLog("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","
-                        + imagine.getHeight() + ")");
+                        infoPagini[index] = procPagina.prelucrarePagina(imagine);
 
-                infoPag = procPagina.prelucrarePagina(imagine);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // Bună practică pentru thread-uri
+
+                    } catch (IOException e) {
+                        // Aici gestionezi eroarea de PDF (logare sau marcare pagină ca eșuată)
+                        System.err.println("Eroare la pagina " + index + ": " + e.getMessage());
+                    } finally {
+                        ocrLimit.release();
+                        latch.countDown();
+                    }
+                });
+            }
+            latch.await();
+
+            for (int i = 0; i < nrPagini; i++) {
+
+                infoPag = infoPagini[i];
 
                 if (infoPag.getTipPagina() != TipPagina.PagGoala) {
-                    System.out.println("Actul  -- " + infoPag.getTipPagina());
                     listener.onLog("Pagina tip  -- " + infoPag.getTipPagina());
                     listener.onLog("Barcode  -- " + infoPag.getBarcode());
 
@@ -67,7 +95,6 @@ public class ProcesorDocumente {
                                     + cerere.getFirma() + "_" + paginiCurente.size() + ".pdf");
                             pdfService.salveazaGrupPagini(document, paginiCurente, cerere.getNumar() + "_"
                                     + cerere.getData() + "_" + cerere.getFirma() + "_" + paginiCurente.size() + ".pdf");
-                            contorDocumente++;
                             paginiCurente.clear();
                         }
 
