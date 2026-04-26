@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.Cerere;
+import ro.onrc.eliberari.model.CerereDTO;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
 import java.awt.image.BufferedImage;
@@ -41,7 +42,6 @@ public class ProcesareController {
         // Rulăm procesarea pe un fir de execuție separat pentru a nu bloca serverul
         Thread.ofVirtual().start(() -> {
             try {
-                List<Cerere> toateRezultatele = new ArrayList<>();
 
                 LogListener sseListener = (mesaj) -> {
                     try {
@@ -61,8 +61,7 @@ public class ProcesareController {
 
                         // Aici apelezi metoda ta de procesare
 
-                        List<Cerere> rezultateFisier = procesor.proceseaza(f, sseListener);
-                        toateRezultatele.addAll(rezultateFisier); // LINIE NOUĂ
+                        procesor.proceseazaDocumentScanat(f, sseListener);
 
                         sseListener.onLog("Fișier finalizat: " + f.getName());
                     }
@@ -70,7 +69,9 @@ public class ProcesareController {
 
                 sseListener.onLog("--- Toate fișierele au fost procesate ---");
 
-                emitter.send(SseEmitter.event().name("tabel").data(toateRezultatele));
+                List<CerereDTO> cereriDTO = procesor.getLotCereri().getToate().stream().map(CerereDTO::new).toList();
+                emitter.send(SseEmitter.event().name("tabel").data(cereriDTO));
+
 
                 emitter.complete(); // Închidem fluxul
             } catch (Exception e) {

@@ -80,11 +80,14 @@ export class App {
 
     // Creăm un array cu restul de rânduri goale
     const goale = Array(randuriGoaleNecesare).fill({
-      pagina: '',
-      firma: '',
-      cui: '',
       numar: '',
       data: '',
+      firma: '',
+      cui: '',
+      incheiere: null,
+      ci: null,
+      cim: null,
+      cc: null
     });
 
     return [...dateReale, ...goale];

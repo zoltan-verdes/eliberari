@@ -11,17 +11,17 @@ import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.service.BarcodeService;
 import ro.onrc.eliberari.service.OcrService;
 import ro.onrc.eliberari.service.PdfService;
+import ro.onrc.eliberari.utils.ImageProcessor;
+
 import java.awt.image.BufferedImage;
 
 @Component
 public class ProcesorPagina {
     private final OcrService ocrService;
-    private final PdfService pdfService;
     private final BarcodeService barcodeService;
 
     public ProcesorPagina(OcrService ocrService, PdfService pdfService, BarcodeService barcodeService) {
         this.ocrService = ocrService;
-        this.pdfService = pdfService;
         this.barcodeService = barcodeService;
     }
 
@@ -32,7 +32,7 @@ public class ProcesorPagina {
         String firma = "negasit";
         String barcode = "";
         TipPagina tipPag = TipPagina.Altele;
-        if (pdfService.estePaginaGoala(imagine))
+        if (ImageProcessor.estePaginaAlba(imagine))
             return new InfoPagina(TipPagina.PagGoala);
         String text = ocrService.ocerizeaza(imagine, 0, AppConstants.Y_START_O, imagine.getWidth(),
                 AppConstants.Y_HEIGHT_O);

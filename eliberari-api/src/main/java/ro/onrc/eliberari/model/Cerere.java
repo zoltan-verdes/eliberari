@@ -1,59 +1,106 @@
 package ro.onrc.eliberari.model;
 
-public class Cerere {
-    private String numar;
-    private String data; // Poți folosi String sau LocalDate dacă vrei să-l formatezi ulterior
-    private String cui;
-    private String firma;
-    private Boolean inch, ci, cim;
-    private int cc;
-    
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+public class Cerere implements Comparable<Cerere> {
+    private final long numar;
+    private final String data;
+    private final String cui;
+    private final String firma;
+    private final List<Act> acte = new ArrayList<>();
+
     public Cerere(String numar, String data, String cui, String firma) {
-        this.numar = numar;
+        this.numar = parseLongSafely(numar);
         this.data = data;
         this.cui = cui;
         this.firma = firma;
-        this.inch = false;
-        this.ci = false;
-        this.cim = false;
-        this.cc = 0;
     }
 
     public Cerere(InfoPagina infoPag) {
-        this.numar = infoPag.getNumar();
-        this.data = infoPag.getData();
-        this.cui = infoPag.getCui();
-        this.firma = infoPag.getFirma();
-        this.inch = false;
-        this.ci = false;
-        this.cim = false;
-        this.cc = 0;
+        this(infoPag.getNumar(), infoPag.getData(), infoPag.getCui(), infoPag.getFirma());
     }
 
+    private long parseLongSafely(String s) {
+        if (s == null) return 0;
+        try {
+            return Long.parseLong(s.trim().replaceAll("\\D", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
-    public String getNumar() {return numar; }
-    public void setNumar(String numar) {this.numar = numar;}
+    // Getters pentru informațiile de bază
+    public long getNumar() { return numar; }
+    public String getData() { return data; }
+    public String getCui() { return cui; }
+    public String getFirma() { return firma; }
 
-    public String getData() {return data;}
-    public void setData(String data) {this.data = data;}
+    public void addAct(Act nou) {
+        TipPagina tip = nou.getTipPagina();
+        if (tip == TipPagina.Incheiere || tip == TipPagina.CI || tip == TipPagina.CIM) {
+            boolean dejaExista = acte.stream().anyMatch(a -> a.getTipPagina() == tip);
+            if (dejaExista) {
+                throw new IllegalStateException("Cererea are deja un act de tip " + tip);
+            }
+        }
+        this.acte.add(nou);
+    }
 
-    public String getCui() {return cui;}
-    public void setCui(String cui) {this.cui = cui;}
+    /**
+     * Returnează actele sortate: Incheiere, CI, CIM, Constatator, Altele
+     */
+    public List<Act> getActeOrdonate() {
+        List<Act> sortate = new ArrayList<>(acte);
+        sortate.sort(Comparator.comparingInt(a -> switch (a.getTipPagina()) {
+            case Incheiere -> 1;
+            case CI -> 2;
+            case CIM -> 3;
+            case Constatator -> 4;
+            default -> 5;
+        }));
+        return sortate;
+    }
 
-    public String getFirma() {return firma;}
-    public void setFirma(String firma) {this.firma = firma;}
+    public List<Act> getToateActele() {
+        return new ArrayList<>(acte);
+    }
 
-    public Boolean getInch() {return inch;}
-    public void setInch(Boolean incheiere) {this.inch = incheiere;}
+    public Act getIncheiere() { return findUnique(TipPagina.Incheiere); }
+    public Act getCI() { return findUnique(TipPagina.CI); }
+    public Act getCIM() { return findUnique(TipPagina.CIM); }
+    public Act getAct(TipPagina tipPagina) { return findUnique(tipPagina); }
+    
+    public List<Act> getConstatatoare() {
+        return acte.stream()
+                .filter(a -> a.getTipPagina() == TipPagina.Constatator)
+                .toList();
+    }
 
-    public Boolean getCi() {return ci;}
-    public void setCi(Boolean ci) {this.ci = ci;}
+    private Act findUnique(TipPagina tip) {
+        return acte.stream()
+                .filter(a -> a.getTipPagina() == tip)
+                .findFirst()
+                .orElse(null);
+    }
 
-    public Boolean getCim() {return cim;}
-    public void setCim(Boolean cim) {this.cim = cim;}
+    @Override
+    public int compareTo(Cerere o) {
+        return Long.compare(this.numar, o.numar);
+    }
 
-    public int getCc() {return cc;}
-    public void setCc(int cc) {this.cc = cc;}
-    public void addCc() {this.cc += 1;}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cerere cerere = (Cerere) o;
+        return numar == cerere.numar;
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(numar);
+    }
 }

@@ -11,11 +11,15 @@ import { HttpClient } from '@angular/common/http';
 export class Rezultat {
   @Input() date: any[] = [];
 
+  formatStatus(status: any): string {
+    if (!status || (status.nrPagLot === 0 && status.nrPagScanat === 0)) return '- / -';
+    if (!status || (status.nrPagLot === 0)) return '- / '+  status.nrPagScanat;
+    if (!status || (status.nrPagScanat === 0)) return status.nrPagLot + ' / -';
+
+    return `${status.nrPagLot} / ${status.nrPagScanat}`;
+  }
+
+  isComplet(status: any): boolean {
+    return status?.complet ?? true;
+  }
 }
-
-
-
-
-
-
-

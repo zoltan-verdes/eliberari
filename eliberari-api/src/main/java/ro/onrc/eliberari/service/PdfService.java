@@ -1,6 +1,7 @@
 package ro.onrc.eliberari.service;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.stereotype.Service;
 
@@ -24,40 +25,26 @@ public class PdfService {
         return renderer.renderImageWithDPI(paginaIndex, 300);
     }
 
-    public void salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String numeFisier) throws IOException {
+    public File salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String numeFisier) throws IOException {
+        File fisier;
         try (PDDocument nou = new PDDocument()) {
             for (int index : pagini) {
                 nou.addPage(sursa.getPage(index));
-            }
-            nou.save(new File(config.getOutputFolder() + numeFisier));
+            };
+            fisier=new File(config.getOutputFolder() + numeFisier);
+            nou.save(fisier);
+            return fisier;
         }
     }
 
-    public boolean estePaginaGoala(BufferedImage imagine) {
-    int width = imagine.getWidth();
-    int height = imagine.getHeight();
-    long pixeliColorati = 0;
-    
-    // Prag de luminozitate: 240 (aproape alb). 
-    // Orice e mai mic de 240 este considerat "zgomot" sau text.
-    int pragAlb = 240; 
-
-    // Scanăm imaginea (sărim peste pixeli pentru viteză, ex: din 5 în 5)
-    for (int y = 0; y < height/2; y+=2) {
-        for (int x = 0; x < width; x++) {
-            int color = imagine.getRGB(x, y);
-            int r = (color >> 16) & 0xFF;
-            int g = (color >> 8) & 0xFF;
-            int b = (color & 0xFF);
-
-            if (r < pragAlb || g < pragAlb || b < pragAlb) {
-                pixeliColorati++;
-            }
-        }
+    public String extrageText(PDDocument doc, int paginaIndex) throws IOException {
+        PDFTextStripper stripper = new PDFTextStripper();
+        // PDFTextStripper folosește indexare de la 1 la n
+        stripper.setStartPage(paginaIndex + 1);
+        stripper.setEndPage(paginaIndex + 1);
+        
+        String text = stripper.getText(doc);
+        return text != null ? text.trim() : "";
     }
- //   System.out.println("Puncte gasite "+pixeliColorati+"din totalul de "+(width * height /4));
-    
-    return pixeliColorati < 100; 
-}
 
 }

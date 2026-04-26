@@ -1,31 +1,30 @@
- <h3>Date Extrase</h3>
-  <div  class="results-container">
-    <table class="tabel_cereri">
-      <thead>
+<div class="results-container">
+  <table class="tabel-cereri">
+    <thead>
+      <tr>
+        <th>Nr. Cerere</th>
+        <th>Data</th>
+        <th>Firma</th>
+        <th>CUI</th>
+        <th>Încheiere</th>
+        <th>CI</th>
+        <th>CIM</th>
+        <th>CC (Total)</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of date; track $index) {
         <tr>
-          <th>Nr.cerere</th>
-          <th>Data</th>
-          <th>Firma</th>
-          <th>CUI</th>
-          <th>Inch</th>
-          <th>CI</th>
-          <th>CIM</th>
-          <th>CC</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (r of date; track r.numar) {
-        <tr>
-          <td>{{ r.numar }}</td>
-          <td>{{ r.data }}</td>
-          <td>{{ r.firma }}</td>
-          <td>{{ r.cui }}</td>
-          <td>{{ r.inch }}</td>
-          <td>{{ r.ci }}</td>
-          <td>{{ r.cim }}</td>
-          <td>{{ r.cc }}</td>
+          <td>{{ item.numar || '' }}</td>
+          <td>{{ item.data || '' }}</td>
+          <td class="text-left">{{ item.firma || '' }}</td>
+          <td>{{ item.cui || '' }}</td>
+          <td [class.error]="!isComplet(item.incheiere)">{{ formatStatus(item.incheiere) }} <input type="checkbox" name=item.numar value={{isComplet(item.incheiere)}}></td>
+          <td [class.error]="!isComplet(item.ci)">{{ formatStatus(item.ci) }}</td>
+          <td [class.error]="!isComplet(item.cim)">{{ formatStatus(item.cim) }}</td>
+          <td [class.error]="!isComplet(item.cc)">{{ formatStatus(item.cc) }}</td>
         </tr>
       }
-      </tbody>
-    </table>
-  </div>
+    </tbody>
+  </table>
+</div>

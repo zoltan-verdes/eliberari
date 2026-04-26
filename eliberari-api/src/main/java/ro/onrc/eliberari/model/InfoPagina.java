@@ -39,6 +39,14 @@ public class InfoPagina {
     public String getNumar() {
         return numar;
     }
+    
+    public int getNumarInt() {
+        try {
+            return Integer.parseInt(numar);
+        } catch (NumberFormatException e) {
+            return 0; // Sau poți arunca o excepție sau returna un alt indicator
+        }
+    }
 
     public String getData() {
         return data;
@@ -58,6 +66,11 @@ public class InfoPagina {
 
     public String getBarcode() {
         return barcode;
+    }
+
+    
+    public boolean isActPrincipal() {
+        return this.tipPag == TipPagina.Incheiere || this.tipPag == TipPagina.CI || this.tipPag == TipPagina.CIM || this.tipPag  == TipPagina.Constatator;
     }
 
     @Override
