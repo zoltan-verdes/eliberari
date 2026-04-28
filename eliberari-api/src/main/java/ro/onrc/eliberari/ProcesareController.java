@@ -3,8 +3,12 @@ package ro.onrc.eliberari;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
@@ -24,7 +28,7 @@ import javax.imageio.ImageIO;
 
 @RestController
 @RequestMapping("/api/ocr")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class ProcesareController {
 
     private final ProcesorDocumente procesor;
@@ -97,6 +101,21 @@ public class ProcesareController {
         emitter.send(SseEmitter.event().name("image-data").data(base64Image));
 
         return emitter;
+    }
+
+    @PostMapping("/upload")
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            File inputDir = new File(config.getInputFolder());
+            if (!inputDir.exists()) {
+                inputDir.mkdirs();
+            }
+            File destFile = new File(inputDir, file.getOriginalFilename());
+            file.transferTo(destFile);
+            return "File uploaded successfully: " + file.getOriginalFilename();
+        } catch (IOException e) {
+            return "Failed to upload file: " + e.getMessage();
+        }
     }
 
 }

@@ -19,6 +19,8 @@ export class App {
   logs = signal<string[]>([]);
   isProcessing = signal(false);
   rezultate = signal<any[]>([]);
+  selectedFile = signal<File | null>(null);
+  isUploading = signal(false);
 
   pornesteProcesare() {
     this.isProcessing.set(true);
@@ -72,6 +74,42 @@ export class App {
     eventSource.onerror = () => {
       eventSource.close();
     };
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/zip') {
+      this.selectedFile.set(file);
+    } else {
+      alert('Selectați un fișier zip valid. Tip fisier selectat-'+file.type);
+      this.selectedFile.set(null);
+    }
+  }
+
+  uploadFile() {
+    console.log('am intrat in upload');
+    if (!this.selectedFile()) return;
+    this.isUploading.set(true);
+    const formData = new FormData();
+    formData.append('file', this.selectedFile()!);
+
+    this.http.post('http://localhost:8080/api/ocr/upload', formData, { 
+  responseType: 'text'}).subscribe({
+      next: (response) => {
+        console.log('File uploaded:', response);
+        this.logs.update((l) => [...l, 'Fișier încărcat: ' + this.selectedFile()!.name]);
+        this.isUploading.set(false);
+        this.selectedFile.set(null);
+        // Reset the input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      },
+      error: (error) => {
+        console.error('Upload failed:', error);
+        this.logs.update((l) => [...l, 'Eroare la încărcarea fișierului']);
+        this.isUploading.set(false);
+      }
+    });
   }
 
   rezultateCompletate = computed(() => {

@@ -1,5 +1,28 @@
 <div class="main">
-  <div style="display: flex">
+  <div class="incarca">
+    <label class="custom-file-input">
+      <input type="file" accept=".zip" #fileInput (change)="onFileSelected($event)" />
+      <span class="file-icon">📁</span>
+      <span class="file-name">{{ selectedFile()?.name || 'Selecteaza fișier Lot' }}</span>
+    </label>
+    <button [disabled]="!selectedFile || isUploading()" (click)="uploadFile()">
+      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP' }}
+    </button>
+  </div>
+
+  <div class="incarca">
+    <label class="custom-file-input">
+      <input type="file" accept=".zip" #fileInput (change)="onFileSelected($event)" />
+      <span class="file-icon">📁</span>
+      <span class="file-name">{{ selectedFile()?.name || 'Selecteaza fișier Scanat' }}</span>
+    </label>
+    <button [disabled]="!selectedFile || isUploading()" (click)="uploadFile()">
+      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
+    </button>
+  </div>
+  
+
+  <div>
     <button [disabled]="isProcessing()" (click)="pornesteProcesare()">
       {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
     </button>
