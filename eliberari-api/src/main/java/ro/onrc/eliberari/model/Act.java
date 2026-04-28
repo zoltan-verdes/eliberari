@@ -4,32 +4,36 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.File;
 
 public class Act {
-   private final TipPagina tipPagina;
-    private long numar;
-    private String denumire_fisier;
+    private final long numar;
+    private final TipPagina tipPagina;
+    private final String denumire_fisier;
     private int nrPaginiLot = 0;
     private int nrPaginiScanate = 0;
     private File fisierLot=null, fisierScanat=null;
 
-    public Act(TipPagina tipPagina, String denumire) {
+    public Act(long numar, TipPagina tipPagina, String denumire) {
+        this.numar = numar;
         this.tipPagina = tipPagina;
         this.denumire_fisier = denumire;
     }
 
 
-    public Act(TipPagina tipPagina, int nrPaginiScanate, File fisierScanat) {
-        this.tipPagina = tipPagina;
-        this.nrPaginiScanate = nrPaginiScanate;
-        this.fisierScanat = fisierScanat;
-    }
-
-    public Act(TipPagina tipPagina, String denumire, int nrPaginiLot, File fisier, long numar) {
+    public Act(long numar, TipPagina tipPagina, String denumire, int nrPaginiLot, File fisier) {
+        this.numar = numar;
         this.tipPagina = tipPagina;
         this.denumire_fisier = denumire;
         this.nrPaginiLot = nrPaginiLot;
         this.fisierLot = fisier;
-        this.numar = numar;
     }
+
+    public Act(long numar, TipPagina tipPagina, File fisier) {
+        this.numar = numar;
+        this.tipPagina = tipPagina;
+        this.denumire_fisier = "";
+        this.fisierScanat = fisier;
+    }
+
+
 
     public TipPagina getTipPagina() { return tipPagina; }
     public String getDenumire_fisier() { return denumire_fisier; }

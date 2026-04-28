@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
-import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.model.CerereDTO;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
@@ -20,7 +19,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -65,7 +63,7 @@ public class ProcesareController {
 
                         // Aici apelezi metoda ta de procesare
 
-                        procesor.proceseazaDocumentScanat(f, sseListener);
+                        procesor.proceseazaIncheieri(f, sseListener);
 
                         sseListener.onLog("Fișier finalizat: " + f.getName());
                     }
@@ -105,7 +103,8 @@ public class ProcesareController {
 
     @PostMapping("/upload")
     public File uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
+        System.out.println("Fișier primit: " + file.getOriginalFilename());
+        try {            
             File inputDir = new File(config.getInputFolder());
             if (!inputDir.exists()) {
                 inputDir.mkdirs();
@@ -115,6 +114,8 @@ public class ProcesareController {
             procesor.proceseazaLot(destFile);
             return destFile;
         } catch (IOException e) {
+            System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

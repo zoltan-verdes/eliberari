@@ -82,6 +82,51 @@ public class DocumentOptimizer {
         return fisierIesire;
     }
 
+    public File eliminaGoale(File fisierIntrare) throws Exception {
+        File fisierIesire = new File(fisierIntrare.getParent(), fisierIntrare.getName()+"_fara_pag_goale.pdf");
+        Semaphore ocrLimit = new Semaphore(40);
+
+        try (PDDocument docOriginal = PDDocument.load(fisierIntrare);
+                PDDocument docNou = new PDDocument()) {
+
+            int nrPagini = docOriginal.getNumberOfPages();
+            CountDownLatch latch = new CountDownLatch(nrPagini);
+            boolean[] paginiGoale = new boolean[nrPagini];
+
+            for (int i = 0; i < nrPagini; i++) {
+                final int index = i;
+                Thread.ofVirtual().start(() -> {
+                    try {
+                        BufferedImage imgBruta = pdfService.randeazaPagina(docOriginal, index);
+                        paginiGoale[index] = ImageProcessor.estePaginaAlba(imgBruta);
+                        ocrLimit.acquire();
+
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+
+                    } catch (IOException e) {
+                        System.err.println("Eroare la pagina " + index + ": " + e.getMessage());
+                    } finally {
+                        ocrLimit.release();
+                        latch.countDown();
+                    }
+                });
+            }
+            latch.await();
+
+            for (int i = 0; i < docOriginal.getNumberOfPages(); i++) {
+                if (paginiGoale[i]) {
+                    continue;
+                }
+                PDPage pagina = docOriginal.getPage(i);
+                docNou.addPage(pagina);
+            }
+
+            docNou.save(fisierIesire);
+        }
+        return fisierIesire;
+    }
+
     private void adaugaPaginaBinarizata(PDDocument doc, BufferedImage img) throws IOException {
 
         // PDPage pagina = new PDPage(new PDRectangle(img.getWidth(), img.getHeight()));

@@ -79,20 +79,20 @@ export class App {
 
   onFisLotSelected(event: any) {
     const fisLot = event.target.files[0];
-    if (fisLot && fisLot.type === 'application/zip') {
+    if (fisLot && fisLot.type === 'application/x-zip-compressed') {
       this.selectedFisLot.set(fisLot);
     } else {
-      alert('Selectați un fișier zip valid. Tip fisier selectat-'+fisLot.type);
+      alert('Selectați un fișier zip valid. Tip fisier selectat: '+fisLot.type);
       this.selectedFisLot.set(null);
     }
   }
 
   onFisScanSelected(event: any) {
     const fisScan = event.target.files[0];
-    if (fisScan && fisScan.type === 'application/zip') {
+    if (fisScan && fisScan.type === 'application/pdf') {
       this.selectedFisScan.set(fisScan);
     } else {
-      alert('Selectați un fișier pdf valid. Tip fisier selectat-'+fisScan.type);
+      alert('Selectați un fișier pdf valid. Tip fisier selectat: '+fisScan.type);
       this.selectedFisScan.set(null);
     }
   }

@@ -12,7 +12,7 @@
 
   <div class="incarca">
     <label class="custom-file-input">
-      <input type="file" accept=".zip" #fileInput (change)="onFisScanSelected($event)" />
+      <input type="file" accept=".pdf" #fileInput (change)="onFisScanSelected($event)" />
       <span class="file-icon">📁</span>
       <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
     </label>

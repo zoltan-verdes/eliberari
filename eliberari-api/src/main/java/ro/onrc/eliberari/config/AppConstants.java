@@ -6,14 +6,30 @@ public class AppConstants {
     public static final String MARKER_TEXT = "NCHEIERE";
     
     // Coordonate 300 DPI pentru intervalul 15cm - 17.5cm
-    public static final int Y_START = 620;
-    public static final int Y_HEIGHT = 200;
-//    public static final int Y_START_C = 700;
-//    public static final int Y_HEIGHT_C = 800;
-    public static final int Y_START_C = 600;
-    public static final int Y_HEIGHT_C = 500;
 
-    public static final int Y_START_O = 100;
-    public static final int Y_HEIGHT_O = 1060;
+//  INCHEIERE    
+    public static final int INCH_Y = 600;
+    public static final int INCH_HEIGHT = 300;
+    public static final int INCH_X = 1000;
+    public static final int INCH_WIDTH = 800;
+
+// CONSTATATOR  
+    public static final int CC_Y = 600;
+    public static final int CC_HEIGHT = 500;
+    public static final int CC_X = 500;
+    public static final int CC_WIDTH = 1000;
+
+// CIM
+    public static final int CIM_Y = 350;
+    public static final int CIM_HEIGHT = 200;
+    public static final int CIM_X = 150;
+    public static final int CIM_WIDTH = 900;
+
+
+//CI
+    public static final int CI_Y = 600;
+    public static final int CI_HEIGHT = 250;
+    public static final int CI_X = 700;
+    public static final int CI_WIDTH = 2100;
 
 }

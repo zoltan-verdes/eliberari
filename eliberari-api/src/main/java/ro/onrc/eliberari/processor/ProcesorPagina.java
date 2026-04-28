@@ -34,8 +34,7 @@ public class ProcesorPagina {
         TipPagina tipPag = TipPagina.Altele;
         if (ImageProcessor.estePaginaAlba(imagine))
             return new InfoPagina(TipPagina.PagGoala);
-        String text = ocrService.ocerizeaza(imagine, 0, AppConstants.Y_START_O, imagine.getWidth(),
-                AppConstants.Y_HEIGHT_O);
+        String text = ocrService.ocerizeaza(imagine, 0, 0, imagine.getWidth(), imagine.getHeight() / 3);
         System.out.println("---\n---\n" + text + "\n----");
         if (text.contains("NCHEIERE"))
             tipPag = TipPagina.Incheiere;
@@ -64,6 +63,40 @@ public class ProcesorPagina {
 
         return new InfoPagina(tipPag, numar, data, cui, firma, barcode);
     }
+
+
+    public boolean isMarkerPresent(BufferedImage imagine, TipPagina tipPagina) {
+        switch (tipPagina) {
+            case Incheiere: return isIncheiere(imagine);
+            case Constatator: return isConstator(imagine);
+            case CIM: return isCIM(imagine);
+            case CI: return isCI(imagine);
+            default: return false;
+        }
+    }
+
+    public boolean isIncheiere(BufferedImage imagine) {
+        String text = ocrService.ocerizeaza(imagine, AppConstants.INCH_X, AppConstants.INCH_Y, AppConstants.INCH_WIDTH, AppConstants.INCH_HEIGHT);
+        return text.contains("ÎNCHEIERE");
+    }
+
+    public boolean isConstator(BufferedImage imagine) {
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CC_X, AppConstants.CC_Y, AppConstants.CC_WIDTH, AppConstants.CC_HEIGHT);
+        return text.contains("CERTIFICAT CONSTATATOR");
+    }
+
+    public boolean isCI(BufferedImage imagine) {
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CI_X, AppConstants.CI_Y, AppConstants.CI_WIDTH, AppConstants.CI_HEIGHT);
+        return text.contains("CERTIFICAT DE ");
+    }
+
+    public boolean isCIM(BufferedImage imagine) {
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CIM_X, AppConstants.CIM_Y, AppConstants.CIM_WIDTH, AppConstants.CIM_HEIGHT);
+        return text.contains("CERTIFICAT DE");
+    }
+
+
+
 
     private String cautaPattern(String text, String regex) {
         Pattern pattern = Pattern.compile(regex);
