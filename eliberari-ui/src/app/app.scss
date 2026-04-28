@@ -6,7 +6,7 @@
   border: 1px solid black;
 
   button {
-    width: 150px;
+    width: 10em;
     padding: 5px;
     background: #8c99a8;
     color: white;
@@ -18,30 +18,31 @@
 
   .incarca {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
-    border: 1px solid green;
+    padding: 5px;
 
     button {
-      height: 100%;
-      display: block;
+      padding: 2px 12px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      width: 15em;
     }
-    
-
   }
 
   .custom-file-input {
     display: inline-flex;
     align-items: center;
+    white-space: nowrap;
     gap: 8px;
-    padding: 5px 10px;
+    padding: 2px 12px;
     border: 1px solid black;
     border-radius: 5px;
     background: #fff;
     color: #222;
     cursor: pointer;
-    width: 300px;
-    height: 100%;
+    width: 13rem;
     text-transform: none;
 
     input {
@@ -49,7 +50,7 @@
     }
 
     .file-icon {
-      font-size: 1.2rem;
+      font-size: 1.2em;
     }
 
     .file-label {
@@ -66,7 +67,6 @@
   .file-name {
     font-size: 0.95rem;
     color: #444;
-    max-width: 220px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -1,4 +1,4 @@
-import { Component, inject, signal, NgZone, computed } from '@angular/core';
+import { Component, inject, signal, NgZone, computed, Signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Jurnal } from './jurnal/jurnal';
@@ -19,7 +19,8 @@ export class App {
   logs = signal<string[]>([]);
   isProcessing = signal(false);
   rezultate = signal<any[]>([]);
-  selectedFile = signal<File | null>(null);
+  selectedFisLot = signal<File | null>(null);
+  selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
 
   pornesteProcesare() {
@@ -76,30 +77,54 @@ export class App {
     };
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/zip') {
-      this.selectedFile.set(file);
+  onFisLotSelected(event: any) {
+    const fisLot = event.target.files[0];
+    if (fisLot && fisLot.type === 'application/zip') {
+      this.selectedFisLot.set(fisLot);
     } else {
-      alert('Selectați un fișier zip valid. Tip fisier selectat-'+file.type);
-      this.selectedFile.set(null);
+      alert('Selectați un fișier zip valid. Tip fisier selectat-'+fisLot.type);
+      this.selectedFisLot.set(null);
     }
   }
 
-  uploadFile() {
+  onFisScanSelected(event: any) {
+    const fisScan = event.target.files[0];
+    if (fisScan && fisScan.type === 'application/zip') {
+      this.selectedFisScan.set(fisScan);
+    } else {
+      alert('Selectați un fișier pdf valid. Tip fisier selectat-'+fisScan.type);
+      this.selectedFisScan.set(null);
+    }
+  }
+
+
+
+  uploadLot() {
+    this.uploadFile(this.selectedFisLot, 'upload');
+  }
+
+  uploadScan() {
+    this.uploadFile(this.selectedFisScan, 'upload-scan');
+  }
+
+  uploadFile(fis: WritableSignal<File | null>, endpoint:string) {
     console.log('am intrat in upload');
-    if (!this.selectedFile()) return;
+    if (!fis()) { 
+        console.error('Semnalul nu este inițializat sau fișierul lipsește');
+        return; 
+    }
     this.isUploading.set(true);
     const formData = new FormData();
-    formData.append('file', this.selectedFile()!);
+    formData.append('file', fis()!);
 
-    this.http.post('http://localhost:8080/api/ocr/upload', formData, { 
+
+    this.http.post('http://localhost:8080/api/ocr/'+endpoint, formData, { 
   responseType: 'text'}).subscribe({
       next: (response) => {
         console.log('File uploaded:', response);
-        this.logs.update((l) => [...l, 'Fișier încărcat: ' + this.selectedFile()!.name]);
+        this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name]);
         this.isUploading.set(false);
-        this.selectedFile.set(null);
+        fis.set(null);
         // Reset the input
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         if (fileInput) fileInput.value = '';

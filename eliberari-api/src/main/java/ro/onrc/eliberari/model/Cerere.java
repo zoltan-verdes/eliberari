@@ -23,6 +23,7 @@ public class Cerere implements Comparable<Cerere> {
         this(infoPag.getNumar(), infoPag.getData(), infoPag.getCui(), infoPag.getFirma());
     }
 
+ 
     private long parseLongSafely(String s) {
         if (s == null) return 0;
         try {

@@ -5,6 +5,7 @@ import java.io.File;
 
 public class Act {
    private final TipPagina tipPagina;
+    private long numar;
     private String denumire_fisier;
     private int nrPaginiLot = 0;
     private int nrPaginiScanate = 0;
@@ -22,17 +23,19 @@ public class Act {
         this.fisierScanat = fisierScanat;
     }
 
-    public Act(TipPagina tipPagina, String denumire, int nrPaginiLot, File fisier) {
+    public Act(TipPagina tipPagina, String denumire, int nrPaginiLot, File fisier, long numar) {
         this.tipPagina = tipPagina;
         this.denumire_fisier = denumire;
         this.nrPaginiLot = nrPaginiLot;
         this.fisierLot = fisier;
+        this.numar = numar;
     }
 
     public TipPagina getTipPagina() { return tipPagina; }
     public String getDenumire_fisier() { return denumire_fisier; }
     public int getNrPaginiLot() { return nrPaginiLot; }
     public int getNrPaginiScanate() { return nrPaginiScanate; }
+    public long getNumar() { return numar; }
     public void setNrPaginiScanate(int nr) { this.nrPaginiScanate = nr; }
     public void setFisierScanat(File fisier) { this.fisierScanat = fisier; }
     public File getFisierScanat() { return fisierScanat; }

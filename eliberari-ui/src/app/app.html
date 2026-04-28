@@ -1,22 +1,22 @@
 <div class="main">
   <div class="incarca">
     <label class="custom-file-input">
-      <input type="file" accept=".zip" #fileInput (change)="onFileSelected($event)" />
+      <input type="file" accept=".zip" #fileInput (change)="onFisLotSelected($event)" />
       <span class="file-icon">📁</span>
-      <span class="file-name">{{ selectedFile()?.name || 'Selecteaza fișier Lot' }}</span>
+      <span class="file-name">{{ selectedFisLot()?.name || 'Selecteaza fișier Lot' }}</span>
     </label>
-    <button [disabled]="!selectedFile || isUploading()" (click)="uploadFile()">
+    <button [disabled]="!selectedFisLot || isUploading()" (click)="uploadLot()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP' }}
     </button>
   </div>
 
   <div class="incarca">
     <label class="custom-file-input">
-      <input type="file" accept=".zip" #fileInput (change)="onFileSelected($event)" />
+      <input type="file" accept=".zip" #fileInput (change)="onFisScanSelected($event)" />
       <span class="file-icon">📁</span>
-      <span class="file-name">{{ selectedFile()?.name || 'Selecteaza fișier Scanat' }}</span>
+      <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
     </label>
-    <button [disabled]="!selectedFile || isUploading()" (click)="uploadFile()">
+    <button [disabled]="!selectedFisScan || isUploading()" (click)="uploadScan()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
     </button>
   </div>

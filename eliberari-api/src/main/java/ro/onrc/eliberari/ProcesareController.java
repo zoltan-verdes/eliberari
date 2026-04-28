@@ -104,7 +104,7 @@ public class ProcesareController {
     }
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
+    public File uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             File inputDir = new File(config.getInputFolder());
             if (!inputDir.exists()) {
@@ -112,9 +112,10 @@ public class ProcesareController {
             }
             File destFile = new File(inputDir, file.getOriginalFilename());
             file.transferTo(destFile);
-            return "File uploaded successfully: " + file.getOriginalFilename();
+            procesor.proceseazaLot(destFile);
+            return destFile;
         } catch (IOException e) {
-            return "Failed to upload file: " + e.getMessage();
+            return null;
         }
     }
 

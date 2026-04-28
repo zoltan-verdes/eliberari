@@ -48,18 +48,18 @@ public class ZipService {
      *
      */
 
-    public void dezarhiveaza(String caleZip) throws IOException {
-        dezarhiveaza(caleZip, caleZip.substring(0, caleZip.length() - 4));
+    public List<File> dezarhiveaza(File zipFile) throws IOException {
+        return dezarhiveaza(zipFile, zipFile.getAbsolutePath().substring(0, zipFile.getAbsolutePath().length() - 4));
     }
 
-    public List<File> dezarhiveaza(String caleZip, String directorDestinatie) throws IOException {
+    public List<File> dezarhiveaza(File zipFile, String directorDestinatie) throws IOException {
         List<File> fisiere = new ArrayList<>();
         File destDir = new File(directorDestinatie);
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
 
-        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(caleZip))) {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
             ZipEntry zipEntry = zis.getNextEntry();
 
             while (zipEntry != null) {
