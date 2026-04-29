@@ -1,8 +1,13 @@
 package ro.onrc.eliberari.service;
 
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.stereotype.Service;
 
 import ro.onrc.eliberari.config.AppConfig;
@@ -11,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
 
 @Service
 public class PdfService {
@@ -21,7 +27,8 @@ public class PdfService {
     }
 
     public BufferedImage randeazaPagina(PDDocument doc, int paginaIndex) throws IOException {
-        PDFRenderer renderer = new PDFRenderer(doc);
+        CustomRenderer renderer = new CustomRenderer(doc);
+    //    PDFRenderer renderer = new PDFRenderer(doc);
         return renderer.renderImageWithDPI(paginaIndex, 300);
     }
 
@@ -47,4 +54,27 @@ public class PdfService {
         return text != null ? text.trim() : "";
     }
 
+
+public void eliminaHelveticaAnsi(PDDocument doc) throws IOException {
+    for (PDPage page : doc.getPages()) {
+        PDResources resources = page.getResources();
+        if (resources == null) {
+            continue;
+        }
+
+        for (COSName fontName : resources.getFontNames()) {
+            PDFont fontCurent = resources.getFont(fontName);
+            if (fontCurent == null || !fontCurent.getName().contains("Helvetica")) {
+                continue;
+            }
+            COSDictionary fontDict = fontCurent.getCOSObject();
+            COSBase encoding = fontDict.getItem(COSName.ENCODING);
+            if (encoding instanceof COSName && COSName.WIN_ANSI_ENCODING.equals(encoding)) {
+                resources.getCOSObject().removeItem(fontName);
+            }
+        }
+    }
 }
+
+}
+

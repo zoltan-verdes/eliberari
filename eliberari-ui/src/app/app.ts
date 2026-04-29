@@ -78,11 +78,15 @@ export class App {
   }
 
   onFisLotSelected(event: any) {
-    const fisLot = event.target.files[0];
-    if (fisLot && fisLot.type === 'application/x-zip-compressed') {
+    const fisLot: File | undefined = event.target.files?.[0];
+    const mime = fisLot?.type?.toLowerCase() || '';
+    const name = fisLot?.name?.toLowerCase() || '';
+    const isZip = mime.includes('zip') || name.endsWith('.zip');
+
+    if (fisLot && isZip) {
       this.selectedFisLot.set(fisLot);
     } else {
-      alert('Selectați un fișier zip valid. Tip fisier selectat: '+fisLot.type);
+      alert('Selectați un fișier zip valid. Tip fișier selectat: ' + (fisLot?.type || 'necunoscut'));
       this.selectedFisLot.set(null);
     }
   }

@@ -1,5 +1,6 @@
 package ro.onrc.eliberari.service;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.ArrayList;
@@ -55,9 +56,8 @@ public class ZipService {
     public List<File> dezarhiveaza(File zipFile, String directorDestinatie) throws IOException {
         List<File> fisiere = new ArrayList<>();
         File destDir = new File(directorDestinatie);
-        if (!destDir.exists()) {
-            destDir.mkdirs();
-        }
+        FileUtils.deleteDirectory(destDir);
+        destDir.mkdirs();
 
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
             ZipEntry zipEntry = zis.getNextEntry();

@@ -37,7 +37,7 @@ public class ProcesareController {
         this.config = config;
     }
 
-    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/stream", produces = "text/event-stream;charset=UTF-8")
     public SseEmitter streamProcesare() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // Conexiune de lungă durată
 
@@ -63,7 +63,7 @@ public class ProcesareController {
 
                         // Aici apelezi metoda ta de procesare
 
-                        procesor.proceseazaIncheieri(f, sseListener);
+                        procesor.recunoastereActeScanate(f, sseListener);
 
                         sseListener.onLog("Fișier finalizat: " + f.getName());
                     }
@@ -83,8 +83,7 @@ public class ProcesareController {
         return emitter;
     }
 
-    @GetMapping(value = "/stream-image", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    // @GetMapping("/stream-image")
+    @GetMapping(value = "/stream-image", produces = "text/event-stream;charset=UTF-8")
     public SseEmitter streamImage() throws IOException {
         SseEmitter emitter = new SseEmitter();
 
@@ -106,9 +105,8 @@ public class ProcesareController {
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
             File inputDir = new File(config.getInputFolder());
-            if (!inputDir.exists()) {
-                inputDir.mkdirs();
-            }
+            if (!inputDir.exists())  inputDir.mkdirs();
+            
             File destFile = new File(inputDir, file.getOriginalFilename());
             file.transferTo(destFile);
             procesor.proceseazaLot(destFile);

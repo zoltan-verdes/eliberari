@@ -12,12 +12,18 @@ import ro.onrc.eliberari.service.PdfService;
 import ro.onrc.eliberari.service.ZipService;
 import ro.onrc.eliberari.utils.ImageProcessor;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.stereotype.Component;
 
 import java.awt.image.BufferedImage;
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 
 @Component
 public class ProcesorDocumente {
@@ -70,7 +78,7 @@ public class ProcesorDocumente {
             for (Act act : cerere.getActeOrdonate()) {
                 if (act.getFisierLot() != null && act.getFisierLot().exists()) {
                     listener.onLog("Listez: " + act.getTipPagina() + " -> " + act.getDenumire_fisier());
-                    try (PDDocument doc = PDDocument.load(act.getFisierLot())) {
+                    try (PDDocument doc = Loader.loadPDF(act.getFisierLot())) {
                         printService.printeazaSilent(doc,1);
                     } catch (Exception e) {
                         listener.onLog("Eroare la listarea fișierului " + act.getDenumire_fisier() + ": " + e.getMessage());
@@ -80,12 +88,12 @@ public class ProcesorDocumente {
         }
     }
 
-    public void proceseazaIncheieri(File fisier, LogListener listener) throws Exception {
+    public void recunoastereActeScanate(File fisier, LogListener listener) throws Exception {
 
         Semaphore ocrLimit = new Semaphore(40);
 
         File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
-        try (PDDocument document = PDDocument.load(fisier_optimizat)) {
+        try (PDDocument document = Loader.loadPDF(fisier_optimizat)) {
             List<Integer> paginiCurente = new ArrayList<>();
 
             int nrPagini = document.getNumberOfPages();
@@ -204,7 +212,7 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
 
 
         File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
-        try (PDDocument document = PDDocument.load(fisier_optimizat)) {
+        try (PDDocument document = Loader.loadPDF(fisier_optimizat)) {
             List<Integer> paginiCurente = new ArrayList<>();
 
             int nrPagini = document.getNumberOfPages();
@@ -281,18 +289,18 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
             String numeFisier = f.getName();
 //            System.out.println("Procesăm fișierul: " + numeFisier);
             long numarL = extrageNumarDinNume(numeFisier);
-            
             String numarS = String.valueOf(numarL);
             
             // Determinăm tipul actului pe baza numelui
             TipPagina tip = determinaTipActDinNume(numeFisier);
             int paginiInPdf = 0;
-
-            try (PDDocument doc = PDDocument.load(f)) {
+            try (PDDocument doc = Loader.loadPDF(f)) {
                 paginiInPdf = doc.getNumberOfPages();
-                
-//                if (tip == TipPagina.Constatator) printService.printeazaSilent(doc,2);
-//                else printService.printeazaSilent(doc,1);
+                System.out.print("tiparim " + numeFisier+" " );
+                if (tip != TipPagina.CI)
+                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,1);
+                else printService.printeazaCuFoxit(f,1);
+                System.out.println("trecut cu succes" );
 
                 if (tip == TipPagina.ListaVerificare) {
                     file_lista_verificare = true;
@@ -360,6 +368,11 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
     public BufferedImage getCodCI() {
         return this.cod_ci;
     }
+
+
+
+
+
 }
 
 class FisiereActe{

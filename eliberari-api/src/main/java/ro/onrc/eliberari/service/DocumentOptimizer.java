@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -30,7 +31,7 @@ public class DocumentOptimizer {
         File fisierIesire = new File(fisierIntrare.getParent(), "CLEAN_" + fisierIntrare.getName());
         Semaphore ocrLimit = new Semaphore(40);
 
-        try (PDDocument docOriginal = PDDocument.load(fisierIntrare);
+        try (PDDocument docOriginal = Loader.loadPDF(fisierIntrare);
                 PDDocument docNou = new PDDocument()) {
 
             int nrPagini = docOriginal.getNumberOfPages();
@@ -86,7 +87,7 @@ public class DocumentOptimizer {
         File fisierIesire = new File(fisierIntrare.getParent(), fisierIntrare.getName()+"_fara_pag_goale.pdf");
         Semaphore ocrLimit = new Semaphore(40);
 
-        try (PDDocument docOriginal = PDDocument.load(fisierIntrare);
+        try (PDDocument docOriginal = Loader.loadPDF(fisierIntrare);
                 PDDocument docNou = new PDDocument()) {
 
             int nrPagini = docOriginal.getNumberOfPages();

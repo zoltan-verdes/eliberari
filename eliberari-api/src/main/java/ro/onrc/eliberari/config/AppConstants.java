@@ -4,6 +4,8 @@ public class AppConstants {
     public static final String TESSDATA_PATH = "./tessdata";
 //    public static final String MARKER_TEXT = "DOVADĂ RIDICARE";
     public static final String MARKER_TEXT = "NCHEIERE";
+
+    public static final String TARGET_PRINTER = "imprimantaListari";
     
     // Coordonate 300 DPI pentru intervalul 15cm - 17.5cm
 
