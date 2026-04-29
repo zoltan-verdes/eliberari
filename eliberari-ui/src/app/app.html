@@ -1,4 +1,14 @@
 <div class="main">
+  <!-- Popup pentru mesaj -->
+   @if (logs.length == 0) {
+    <div class="placeholder">Așteptare comandă...</div>
+  }
+  @if (mesaj()){
+  <div  class="popup">
+    {{ mesaj() }}
+  </div>
+  }
+
   <div class="incarca">
     <label class="custom-file-input">
       <input type="file" accept=".zip" #fileInput (change)="onFisLotSelected($event)" />

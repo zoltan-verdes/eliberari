@@ -1,6 +1,7 @@
 package ro.onrc.eliberari;
 
-import org.springframework.http.MediaType;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -101,7 +103,8 @@ public class ProcesareController {
     }
 
     @PostMapping("/upload")
-    public File uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<List<String>> uploadFile(@RequestParam("file") MultipartFile file) {
+        List<String> response = new ArrayList<>();
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
             File inputDir = new File(config.getInputFolder());
@@ -110,11 +113,33 @@ public class ProcesareController {
             File destFile = new File(inputDir, file.getOriginalFilename());
             file.transferTo(destFile);
             procesor.proceseazaLot(destFile);
-            return destFile;
-        } catch (IOException e) {
+            response.add("Fișier încărcat și procesat cu succes.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
             e.printStackTrace();
-            return null;
+            response.add("Eroare la încărcarea fișierului.");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    @PostMapping("/upload-scan")
+    public ResponseEntity<List<String>> uploadScan(@RequestParam("file") MultipartFile file) throws Exception {
+        List<String> response = new ArrayList<>();
+        System.out.println("Fișier primit: " + file.getOriginalFilename());
+        try {            
+            File inputDir = new File(config.getOutputFolder());
+            if (!inputDir.exists())  inputDir.mkdirs();
+            
+            File destFile = new File(inputDir, file.getOriginalFilename());
+            file.transferTo(destFile);
+            response.addAll(procesor.proceseazaDocumentScanat(destFile));
+            response.add("Fișier încărcat și procesat cu succes.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
+            e.printStackTrace();
+            response.add("Eroare la încărcarea fișierului."+e.getMessage());
+            return ResponseEntity.status(500).body(response);
         }
     }
 

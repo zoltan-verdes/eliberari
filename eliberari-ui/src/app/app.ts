@@ -22,6 +22,7 @@ export class App {
   selectedFisLot = signal<File | null>(null);
   selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
+  mesaj = signal<string | null>(null);
 
   pornesteProcesare() {
     this.isProcessing.set(true);
@@ -126,7 +127,17 @@ export class App {
   responseType: 'text'}).subscribe({
       next: (response) => {
         console.log('File uploaded:', response);
-        this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name]);
+        this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name + ' - ' + response]);
+        
+        // Extragem ultimul string din răspuns pentru popup
+        const linii = response.split('\n').filter((l: string) => l.trim());
+        const ultimulMesaj = linii[linii.length - 1]?.trim();
+        if (ultimulMesaj) {
+          this.mesaj.set(ultimulMesaj);
+          // Ștergem mesajul după 5 secunde
+          setTimeout(() => this.mesaj.set(null), 5000);
+        }
+        
         this.isUploading.set(false);
         fis.set(null);
         // Reset the input

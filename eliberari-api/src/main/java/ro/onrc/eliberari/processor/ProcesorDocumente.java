@@ -13,17 +13,11 @@ import ro.onrc.eliberari.service.ZipService;
 import ro.onrc.eliberari.utils.ImageProcessor;
 
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.stereotype.Component;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -208,9 +202,9 @@ public class ProcesorDocumente {
     }
 
 
-public void proceseazaDocumentScanat(File fisier, LogListener listener) throws Exception {
+public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
-
+        List<String> log = new ArrayList<>();
         File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
         try (PDDocument document = Loader.loadPDF(fisier_optimizat)) {
             List<Integer> paginiCurente = new ArrayList<>();
@@ -218,17 +212,18 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
             int nrPagini = document.getNumberOfPages();
             System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
             if (nrPagini != listPagini.size()){
+                log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
                 System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
-                return;
+                return log;
             }
 
             for (int i = 0; i < nrPagini; i++) {
                // verificam ca pagina scanata coresponde cu pagina din lista de pagini procesate anterior
                 if (listPagini.get(i)!=null) 
                 try {
-                    var imagine = pdfService.randeazaPagina(document, i);
-                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","
-                            + imagine.getHeight() + ")");
+                    var imagine = pdfService.randeazaPagina(document, i, 150); 
+                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")");
+                    
 
                     if (listPagini.get(i).getTipPagina() == TipPagina.CI) {;
                         // trebuie sa rotim pagina cu 90 grade pentru a citi corect codul CI
@@ -236,8 +231,9 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
                     };
                     
                     if (!procPagina.isMarkerPresent(imagine, listPagini.get(i).getTipPagina())) {
+                        log.add("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
                         System.out.println("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
-                        return;
+                        return log;
                     }
                     listPagini.get(i).setNrPaginiScanate(listPagini.get(i).getNrPaginiLot());
                     String denumireFisier = listPagini.get(i).getDenumire_fisier();
@@ -252,12 +248,15 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
                     } catch (IOException e) {
                         // Aici gestionezi eroarea de PDF (logare sau marcare pagină ca eșuată)
                         System.err.println("Eroare la pagina " + i + ": " + e.getMessage());
+                        log.add("Eroare la pagina " + i + ": ");
+                    }
                 };
             }
 
-        }
-   
+        return log;
     }
+        
+    
 
 
 
@@ -287,7 +286,7 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
 
         for (File f : fisiere) {
             String numeFisier = f.getName();
-//            System.out.println("Procesăm fișierul: " + numeFisier);
+            System.out.println("Procesăm fișierul: " + numeFisier+" numar pagini totale "+listPagini.size());
             long numarL = extrageNumarDinNume(numeFisier);
             String numarS = String.valueOf(numarL);
             
@@ -297,9 +296,9 @@ public void proceseazaDocumentScanat(File fisier, LogListener listener) throws E
             try (PDDocument doc = Loader.loadPDF(f)) {
                 paginiInPdf = doc.getNumberOfPages();
                 System.out.print("tiparim " + numeFisier+" " );
-                if (tip != TipPagina.CI)
-                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,1);
-                else printService.printeazaCuFoxit(f,1);
+//                if (tip != TipPagina.CI)
+//                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,1);
+//                else printService.printeazaCuFoxit(f,1);
                 System.out.println("trecut cu succes" );
 
                 if (tip == TipPagina.ListaVerificare) {

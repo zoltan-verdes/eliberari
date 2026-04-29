@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
@@ -27,9 +28,15 @@ public class PdfService {
     }
 
     public BufferedImage randeazaPagina(PDDocument doc, int paginaIndex) throws IOException {
-        CustomRenderer renderer = new CustomRenderer(doc);
-    //    PDFRenderer renderer = new PDFRenderer(doc);
+//        CustomRenderer renderer = new CustomRenderer(doc);
+        PDFRenderer renderer = new PDFRenderer(doc);
         return renderer.renderImageWithDPI(paginaIndex, 300);
+    }
+
+    public BufferedImage randeazaPagina(PDDocument doc, int paginaIndex, int DPI) throws IOException {
+//        CustomRenderer renderer = new CustomRenderer(doc);
+        PDFRenderer renderer = new PDFRenderer(doc);
+        return renderer.renderImageWithDPI(paginaIndex, DPI);
     }
 
     public File salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String numeFisier) throws IOException {
