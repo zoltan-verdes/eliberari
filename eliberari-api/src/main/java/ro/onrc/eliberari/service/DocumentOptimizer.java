@@ -103,7 +103,7 @@ public class DocumentOptimizer {
 
             for (int i = 0; i < docOriginal.getNumberOfPages(); i++) {
                 if (paginiGoale[i]) {
-                    System.out.println("Pagina " + i + " este goală, o să o sărim.");
+//                    System.out.println("Pagina " + i + " este goală, o să o sărim.");
                     continue;
                 }
                 PDPage pagina = docOriginal.getPage(i);

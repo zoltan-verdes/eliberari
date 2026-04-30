@@ -223,7 +223,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                 try {
                     var imagine = pdfService.randeazaPagina(document, i, 150); 
                     System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")");
-                    
+                    int numarPagini = listPagini.get(i).getNrPaginiLot();
 
                     if (listPagini.get(i).getTipPagina() == TipPagina.CI) {;
                         // trebuie sa rotim pagina cu 90 grade pentru a citi corect codul CI
@@ -233,12 +233,13 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                     if (!procPagina.isMarkerPresent(imagine, listPagini.get(i).getTipPagina())) {
                         log.add("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
                         System.out.println("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
-                        return log;
+//                        return log;
                     }
-                    listPagini.get(i).setNrPaginiScanate(listPagini.get(i).getNrPaginiLot());
+                    listPagini.get(i).setNrPaginiScanate(numarPagini);
+                    
                     String denumireFisier = listPagini.get(i).getDenumire_fisier();
                     paginiCurente.add(i);
-                    for (int j=1;j<listPagini.get(i).getNrPaginiLot();j++)
+                    for (int j=1;j<numarPagini;j++)
                         paginiCurente.add(++i);
 
                     System.out.println("Salvam: " + denumireFisier);
@@ -286,7 +287,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
         for (File f : fisiere) {
             String numeFisier = f.getName();
-            System.out.println("Procesăm fișierul: " + numeFisier+" numar pagini totale "+listPagini.size());
+            System.out.print("Fisierul: " + numeFisier+" - ");
             long numarL = extrageNumarDinNume(numeFisier);
             String numarS = String.valueOf(numarL);
             
@@ -295,7 +296,9 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
             int paginiInPdf = 0;
             try (PDDocument doc = Loader.loadPDF(f)) {
                 paginiInPdf = doc.getNumberOfPages();
-                System.out.print("tiparim " + numeFisier+" " );
+                System.out.println(doc.getNumberOfPages()+" pagini. Totale:"+listPagini.size());
+                if (tip == TipPagina.CIM) paginiInPdf = 1; 
+//                System.out.print("tiparim " + numeFisier+" " );
 //                if (tip != TipPagina.CI)
 //                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,1);
 //                else printService.printeazaCuFoxit(f,1);
