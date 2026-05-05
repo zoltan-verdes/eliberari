@@ -1,0 +1,29 @@
+<div class="pdf-grid" *ngIf="pdfSrc()">
+  <div *ngFor="let i of [].constructor(totalPages()); let idx = index" 
+       class="page-item" 
+       (click)="togglePage(idx)">
+    
+    <div class="pdf-wrapper">
+      <pdf-viewer
+        [src]="pdfSrc()!"
+        [page]="idx + 1"
+        [render-text]="false"
+        [original-size]="false"
+        [show-all]="false"
+        (after-load-complete)="idx === 0 ? onPdfLoaded($event) : null"
+        style="width: 150px; height: 200px; display: block;"
+      ></pdf-viewer>
+
+      <!-- Overlay pentru pagini ignorate -->
+      <div class="ignored-overlay" *ngIf="!pageStatuses()[idx]">
+        <svg class="diagonal-line">
+          <line x1="0" y1="0" x2="100%" y2="100%" />
+          <line x1="100%" y1="0" x2="0" y2="100%" />
+        </svg>
+        <div class="status-tag">IGNORAT</div>
+      </div>
+    </div>
+
+    <div class="page-info">Pagina {{ idx + 1 }}</div>
+  </div>
+</div>
