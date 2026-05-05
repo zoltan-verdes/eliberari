@@ -67,7 +67,7 @@ public void printeazaFoxIt(File pdfFile, int numarCopii) throws IOException, Int
 
             // O mică pauză de 500ms între copii pentru a preveni suprapunerea în spooler
             if (numarCopii > 1) {
-                Thread.sleep(500);
+                Thread.sleep(1000);
             }
         }
     }
@@ -84,6 +84,7 @@ public void printeazaCuFoxit(File pdfFile, int numarCopii) throws IOException, I
     
     for (int i = 0; i < numarCopii; i++) {
         Runtime.getRuntime().exec(command).waitFor(); // Așteptăm 1 secundă între comenzi pentru a evita suprasolicitarea
+        Thread.sleep(2000);
     }
 }    
 
