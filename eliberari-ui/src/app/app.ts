@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Jurnal } from './jurnal/jurnal';
 import { Rezultat } from './rezultat/rezultat';
+import { SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,11 @@ export class App {
   selectedFisLot = signal<File | null>(null);
   selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
+  mesaj = signal<string | null>(null);
+  // Adaugă noi semnale pentru starea PDF-ului
+  selectedPdfFile = signal<File | null>(null);
+  pageStatuses = signal<boolean[]>([]);
+
 
   pornesteProcesare() {
     this.isProcessing.set(true);
@@ -117,29 +123,84 @@ export class App {
         console.error('Semnalul nu este inițializat sau fișierul lipsește');
         return; 
     }
+
+// 1. Trimitem fișierul către semnalul ce va fi pasat componentei FIU
+    // Facem asta acum pentru ca utilizatorul să vadă PDF-ul în timp ce se încarcă (opțional)
+    this.selectedPdfFile.set(fis());
+
     this.isUploading.set(true);
     const formData = new FormData();
     formData.append('file', fis()!);
-
+  
 
     this.http.post('http://localhost:8080/api/ocr/'+endpoint, formData, { 
   responseType: 'text'}).subscribe({
-      next: (response) => {
+    next: (response) => {
         console.log('File uploaded:', response);
-        this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name]);
-        this.isUploading.set(false);
+        this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name + ' - ' + response]);
+        
+        // Extragem ultimul string din răspuns pentru popup
+        const linii = response.split('\n').filter((l: string) => l.trim());
+        const ultimulMesaj = linii[linii.length - 1]?.trim();
+        if (ultimulMesaj) {
+          this.mesaj.set(ultimulMesaj);
+          // Ștergem mesajul după 5 secunde
+          setTimeout(() => this.mesaj.set(null), 5000);
+        }
+        
+      this.isUploading.set(false);
         fis.set(null);
         // Reset the input
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-      },
-      error: (error) => {
-        console.error('Upload failed:', error);
+
+
+
+/*
+  // Recomandat: Schimbă responseType la 'json' dacă API-ul trimite array-ul de booleeni
+  this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
+    next: (response) => {
+      // Presupunem că response.ignoredPages este array-ul de boolean
+      // Exemplu: [true, true, false, true]
+      this.pageStatuses.set(response.ignoredPages);
+      this.isUploading.set(false);
+
+*/
+
+
+
+    },
+    error: (error) => {
+      console.error('Upload failed:', error);
         this.logs.update((l) => [...l, 'Eroare la încărcarea fișierului']);
-        this.isUploading.set(false);
-      }
-    });
-  }
+      this.isUploading.set(false);
+    }
+  });
+}
+
+handleStatusChange(newStatuses: boolean[]) {
+    this.pageStatuses.set(newStatuses);
+    console.log('Statusuri pagini actualizate manual:', newStatuses);
+}
+// Funcție pentru toggle manual
+togglePageStatus(index: number) {
+  this.pageStatuses.update(statuses => {
+    const newStatuses = [...statuses];
+    newStatuses[index] = !newStatuses[index];
+    return newStatuses;
+  });
+}
+
+
+// Metoda apelată de output-ul copilului
+updateStatusesFromChild(newStatuses: boolean[]) {
+  this.pageStatuses.set(newStatuses);
+}
+
+// În uploadFile, după ce primești răspunsul:
+// this.apiPageStatuses.set(response.someArrayOfBooleans);
+// this.selectedFile.set(fis()!);
+
 
   rezultateCompletate = computed(() => {
     const dateReale = this.rezultate();

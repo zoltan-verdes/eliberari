@@ -77,22 +77,22 @@ public class ProcesorPagina {
 
     public boolean isIncheiere(BufferedImage imagine) {
         String text = ocrService.ocerizeaza(imagine, AppConstants.INCH_X, AppConstants.INCH_Y, AppConstants.INCH_WIDTH, AppConstants.INCH_HEIGHT);
-        return text.contains("ÎNCHEIERE");
+        return text.contains("NCHEIERE");
     }
 
     public boolean isConstator(BufferedImage imagine) {
         String text = ocrService.ocerizeaza(imagine, AppConstants.CC_X, AppConstants.CC_Y, AppConstants.CC_WIDTH, AppConstants.CC_HEIGHT);
-        return text.contains("CERTIFICAT CONSTATATOR");
+        return text.contains("ERTIFICAT CONSTATATOR");
     }
 
     public boolean isCI(BufferedImage imagine) {
         String text = ocrService.ocerizeaza(imagine, AppConstants.CI_X, AppConstants.CI_Y, AppConstants.CI_WIDTH, AppConstants.CI_HEIGHT);
-        return text.contains("CERTIFICAT DE ");
+        return text.contains("ERTIFICAT DE");
     }
 
     public boolean isCIM(BufferedImage imagine) {
         String text = ocrService.ocerizeaza(imagine, AppConstants.CIM_X, AppConstants.CIM_Y, AppConstants.CIM_WIDTH, AppConstants.CIM_HEIGHT);
-        return text.contains("CERTIFICAT DE");
+        return text.contains("ERTIFICAT DE");
     }
 
 

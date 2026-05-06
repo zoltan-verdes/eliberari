@@ -1,4 +1,4 @@
-package com.example.eliberari;
+package ro.onrc.eliberari;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

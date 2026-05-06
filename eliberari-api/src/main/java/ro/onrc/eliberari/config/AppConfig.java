@@ -11,6 +11,8 @@ public class AppConfig {
     
     private String inputFolder;
     private String outputFolder;
+    private String lotFolder;
+    
     private String tessdataPath;
     
     private String authServerUrl;
@@ -28,6 +30,9 @@ public class AppConfig {
 
     public String getOutputFolder() { return outputFolder; }
     public void setOutputFolder(String outputFolder) { this.outputFolder = outputFolder; }
+
+    public String getLotFolder() { return lotFolder; }
+    public void setLotFolder(String lotFolder) { this.lotFolder = lotFolder; }
 
     public String getTessdataPath() { return tessdataPath; }
     public void setTessdataPath(String tessdataPath) { this.tessdataPath = tessdataPath; }
