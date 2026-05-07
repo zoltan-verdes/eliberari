@@ -39,68 +39,7 @@ public class ProcesareController {
         this.config = config;
     }
 
-    @GetMapping(value = "/stream", produces = "text/event-stream;charset=UTF-8")
-    public SseEmitter streamProcesare() {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // Conexiune de lungă durată
 
-        // Rulăm procesarea pe un fir de execuție separat pentru a nu bloca serverul
-        Thread.ofVirtual().start(() -> {
-            try {
-
-                LogListener sseListener = (mesaj) -> {
-                    try {
-                        System.out.println(mesaj);
-                        emitter.send(SseEmitter.event().data(mesaj));
-                    } catch (IOException e) { // Conexiune închisă de client
-                    }
-                };
-
-                // Exemplu de integrare cu logica ta existentă
-                File inputDir = new File(config.getInputFolder());
-                File[] fisiere = inputDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
-
-                if (fisiere != null) {
-                    for (File f : fisiere) {
-                        sseListener.onLog("IN streamProcesare(): Se procesează fișierul: " + f.getName());
-
-                        // Aici apelezi metoda ta de procesare
-
-                        procesor.recunoastereActeScanate(f, sseListener);
-
-                        sseListener.onLog("Fișier finalizat: " + f.getName());
-                    }
-                }
-
-                sseListener.onLog("--- Toate fișierele au fost procesate ---");
-
-                List<CerereDTO> cereriDTO = procesor.getLotCereri().getToate().stream().map(CerereDTO::new).toList();
-                emitter.send(SseEmitter.event().name("tabel").data(cereriDTO));
-
-
-                emitter.complete(); // Închidem fluxul
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        });
-        return emitter;
-    }
-
-    @GetMapping(value = "/stream-image", produces = "text/event-stream;charset=UTF-8")
-    public SseEmitter streamImage() throws IOException {
-        SseEmitter emitter = new SseEmitter();
-
-        // Presupunem că ai BufferedImage-ul tău (poate cel rotit)
-        BufferedImage img = procesor.getCodCI();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(img, "png", baos);
-        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
-
-        // Trimitem string-ul prin SSE
-        emitter.send(SseEmitter.event().name("image-data").data(base64Image));
-
-        return emitter;
-    }
 
     @PostMapping("/upload")
     public ResponseEntity<List<String>> uploadFile(@RequestParam("file") MultipartFile file) {
@@ -114,6 +53,7 @@ public class ProcesareController {
             file.transferTo(destFile);
             procesor.proceseazaLot(destFile);
             response.add("Fișier încărcat și procesat cu succes.");
+            response.add("ar trebui sa adauge " + procesor.getActRepository().getActiv() + " în listă");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
@@ -143,4 +83,51 @@ public class ProcesareController {
         }
     }
 
+    @GetMapping("/liste-disponibile")
+    public ResponseEntity<List<String>> getListeDisponibile() {
+        try {
+            List<String> liste = procesor.getActRepository().getListeDisponibile();
+            return ResponseEntity.ok(liste);
+        } catch (Exception e) {
+            System.out.println("Eroare la obținerea listelor disponibile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ArrayList<>());
+        }
+    }
+
+    @PostMapping("/set-activ")
+    public ResponseEntity<List<String>> setActiv(@RequestParam("nume") String nume) {
+        try {
+            if (procesor.getActRepository().setActiv(nume)) {
+                return ResponseEntity.ok(List.of("Lotul " + nume + " a fost setat ca activ."));
+            } else {
+                return ResponseEntity.status(404).body(procesor.getActRepository().getListeDisponibile());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(List.of("Eroare: " + e.getMessage()));
+        }
+    }
+
 }
+
+
+/*
+     Cod vechi pentru a transmite o imagine
+
+    @GetMapping(value = "/stream-image", produces = "text/event-stream;charset=UTF-8")
+    public SseEmitter streamImage() throws IOException {
+        SseEmitter emitter = new SseEmitter();
+
+        // Presupunem că ai BufferedImage-ul tău (poate cel rotit)
+        BufferedImage img = procesor.getCodCI();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", baos);
+        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+
+        // Trimitem string-ul prin SSE
+        emitter.send(SseEmitter.event().name("image-data").data(base64Image));
+
+        return emitter;
+    }
+*/

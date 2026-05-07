@@ -1,14 +1,15 @@
-import { Component, inject, signal, NgZone, computed, Signal, WritableSignal } from '@angular/core';
+import { Component, inject, signal, NgZone, computed, Signal, WritableSignal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Jurnal } from './jurnal/jurnal';
 import { Rezultat } from './rezultat/rezultat';
+import { ListLoturi } from './list-loturi/list-loturi';
 import { SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, Jurnal, Rezultat],
+  imports: [CommonModule, Jurnal, Rezultat, ListLoturi],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -28,6 +29,7 @@ export class App {
   selectedPdfFile = signal<File | null>(null);
   pageStatuses = signal<boolean[]>([]);
 
+  @ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
 
   pornesteProcesare() {
     this.isProcessing.set(true);
@@ -125,29 +127,37 @@ export class App {
     }
 
 // 1. Trimitem fișierul către semnalul ce va fi pasat componentei FIU
-    // Facem asta acum pentru ca utilizatorul să vadă PDF-ul în timp ce se încarcă (opțional)
+    
     this.selectedPdfFile.set(fis());
 
     this.isUploading.set(true);
     const formData = new FormData();
     formData.append('file', fis()!);
+    
   
+       // Presupunând că serverul returnează numele fișierului creat sau putem folosi fis.name
 
-    this.http.post('http://localhost:8080/api/ocr/'+endpoint, formData, { 
-  responseType: 'text'}).subscribe({
+
+this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
         this.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name + ' - ' + response]);
         
         // Extragem ultimul string din răspuns pentru popup
-        const linii = response.split('\n').filter((l: string) => l.trim());
+        const rString = (typeof response === 'string') ? response : JSON.stringify(response);
+    
+        const linii = rString.split('\n').filter((l: string) => l.trim());
+//        const linii = response.split('\n').filter((l: string) => l.trim());
         const ultimulMesaj = linii[linii.length - 1]?.trim();
         if (ultimulMesaj) {
           this.mesaj.set(ultimulMesaj);
-          // Ștergem mesajul după 5 secunde
           setTimeout(() => this.mesaj.set(null), 5000);
         }
         
+       const numeLotNou = fis()!.name.replace('.zip', ''); 
+       this.listLoturiComp.adauga(numeLotNou);
+
+
       this.isUploading.set(false);
         fis.set(null);
         // Reset the input
@@ -155,18 +165,10 @@ export class App {
         if (fileInput) fileInput.value = '';
 
 
-
 /*
-  // Recomandat: Schimbă responseType la 'json' dacă API-ul trimite array-ul de booleeni
-  this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
-    next: (response) => {
-      // Presupunem că response.ignoredPages este array-ul de boolean
-      // Exemplu: [true, true, false, true]
+      // Presupunem că response.ignoredPages este un array de boolean
       this.pageStatuses.set(response.ignoredPages);
-      this.isUploading.set(false);
-
 */
-
 
 
     },

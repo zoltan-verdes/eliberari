@@ -1,0 +1,17 @@
+<div class="list-loturi">
+  <h3>Liste Disponibile</h3>
+  @if (listeDisponibile().length > 0) {
+    <ul>
+      @for (lista of listeDisponibile(); track lista) {
+        <li 
+          (click) = "selecteazaLot(lista)"
+          [class.active] = "lista === lotActiv()"
+          style="cursor: pointer;">   
+          {{ lista }}
+        </li>
+      }
+    </ul>
+  } @else {
+    <p>Nu există liste disponibile.</p>
+  }
+</div>

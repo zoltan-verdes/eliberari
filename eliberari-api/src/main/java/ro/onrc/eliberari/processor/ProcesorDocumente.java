@@ -61,6 +61,10 @@ public class ProcesorDocumente {
         return lotCereri;
     }
 
+    public ActRepository getActRepository() {
+        return actRepository;
+    }
+
     /**
      * Metodă care parcurge lista de cereri curentă și trimite actele la listare (imprimare)
      * în ordinea riguroasă: Incheiere, CI, CIM, Constatatoare.
@@ -305,9 +309,9 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                 System.out.println(doc.getNumberOfPages()+" pagini. Totale:"+listPagini.size());
                 if (tip == TipPagina.CIM || tip == TipPagina.CI ) paginiInPdf = 1; 
                 System.out.print("tiparim " + numeFisier+" " );
-                if (tip != TipPagina.CI)
-                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,2);
-                else printService.printeazaCuFoxit(f,1);
+//                if (tip != TipPagina.CI)
+//                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,2);
+//                else printService.printeazaCuFoxit(f,1);
                 System.out.println("trecut cu succes" );
 
                 if (tip == TipPagina.ListaVerificare) {
@@ -335,6 +339,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
 
         }
+        System.out.println("punem in actRepository: " + fisier.getName());
         actRepository.salveazaListaNoua(listPagini, fisier.getName().replace(".zip", ""));
 
         return lotCereri.getToate();
@@ -377,9 +382,6 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
     public BufferedImage getCodCI() {
         return this.cod_ci;
     }
-
-
-
 
 
 }

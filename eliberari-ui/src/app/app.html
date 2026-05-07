@@ -15,7 +15,7 @@
       <span class="file-icon">📁</span>
       <span class="file-name">{{ selectedFisLot()?.name || 'Selecteaza fișier Lot' }}</span>
     </label>
-    <button [disabled]="!selectedFisLot || isUploading()" (click)="uploadLot()">
+    <button [disabled]="!selectedFisLot() || isUploading()" (click)="uploadLot()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP' }}
     </button>
   </div>
@@ -26,7 +26,7 @@
       <span class="file-icon">📁</span>
       <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
     </label>
-    <button [disabled]="!selectedFisScan || isUploading()" (click)="uploadScan()">
+    <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
     </button>
   </div>
@@ -39,7 +39,11 @@
 
     <button (click)="aduImaginea()">' Adu Imaginea'</button>
   </div>
+
+  <app-list-loturi></app-list-loturi>
+
   <app-jurnal [logs]="logs()"></app-jurnal>
+  
   <div class="image-wrapper">
     <img [src]="imagineCodBare()" alt="Cod Bare Procesat" />
   </div>
