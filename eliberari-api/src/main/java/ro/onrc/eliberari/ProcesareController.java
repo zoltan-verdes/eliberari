@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
-import ro.onrc.eliberari.model.CerereDTO;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
 import java.awt.image.BufferedImage;

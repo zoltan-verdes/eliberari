@@ -33,10 +33,10 @@ import java.util.regex.Pattern;
 @Component
 public class ProcesorDocumente {
 
+    private final PdfPrintService pdfPrintService;
     private final PdfService pdfService;
     private final ProcesorPagina procPagina;
     private final ZipService zipService;
-    private final PdfPrintService printService;
     private final ActRepository actRepository;
 
     private LotCereri lotCereri = new LotCereri();
@@ -47,13 +47,13 @@ public class ProcesorDocumente {
 
 
     // Spring injectează automat serviciile prin constructor
-    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, DocumentOptimizer documentOptimizer, ZipService zipService, PdfPrintService printService, ActRepository actRepository) {
+    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, DocumentOptimizer documentOptimizer, ZipService zipService, ActRepository actRepository, PdfPrintService pdfPrintService) {
         this.procPagina = procPagina;
         this.pdfService = pdfService;
         this.docOptimezer = documentOptimizer;
         this.zipService = zipService;
-        this.printService = printService;
         this.actRepository = actRepository;
+        this.pdfPrintService = pdfPrintService;
     }
 
 
@@ -69,26 +69,7 @@ public class ProcesorDocumente {
      * Metodă care parcurge lista de cereri curentă și trimite actele la listare (imprimare)
      * în ordinea riguroasă: Incheiere, CI, CIM, Constatatoare.
      */
-    public void listeazaDocumente(LogListener listener) {
-        if (lotCereri.isEmpty()) {
-            listener.onLog("Nu există documente încărcate pentru listare.");
-            return;
-        }
 
-        for (Cerere cerere : lotCereri.getToate()) {
-            listener.onLog("--- Trimitere la listare Cererea nr: " + cerere.getNumar() + " ---");
-            for (Act act : cerere.getActeOrdonate()) {
-                if (act.getFisierLot() != null && act.getFisierLot().exists()) {
-                    listener.onLog("Listez: " + act.getTipPagina() + " -> " + act.getDenumire_fisier());
-                    try (PDDocument doc = Loader.loadPDF(act.getFisierLot())) {
-                        printService.printeazaSilent(doc,1);
-                    } catch (Exception e) {
-                        listener.onLog("Eroare la listarea fișierului " + act.getDenumire_fisier() + ": " + e.getMessage());
-                    }
-                }
-            }
-        }
-    }
 
     public void recunoastereActeScanate(File fisier, LogListener listener) throws Exception {
 
@@ -138,8 +119,6 @@ public class ProcesorDocumente {
             int numarCerereCurent = 0;
             TipPagina tipPaginaCurenta = TipPagina.Altele;
             Cerere cerereCurenta = null;
-            List<Act> listCC = null;
-            int ccCurent = 0;
             Act actCurent = null;
             
             for (int i = 0; i < nrPagini; i++) {
@@ -160,7 +139,7 @@ public class ProcesorDocumente {
                         }else{
                             Act actNou = new Act(numarCerereCurent, tipPaginaCurenta, f);
                             actNou.setNrPaginiScanate(paginiCurente.size());
-                            cerereCurenta.addAct(actNou);
+//                            cerereCurenta.addAct(actNou);
                     }
                     paginiCurente.clear();
                 }   
@@ -174,7 +153,7 @@ public class ProcesorDocumente {
                         cerereCurenta = lotCereri.getCerere(numarCerereCurent).orElseThrow();
                     };
                     tipPaginaCurenta = infoPag.getTipPagina();
-                    if (tipPaginaCurenta == TipPagina.Constatator) {
+/*                    if (tipPaginaCurenta == TipPagina.Constatator) {
                         listCC = cerereCurenta.getConstatatoare();
                         if (ccCurent < listCC.size()) {
                             actCurent = listCC.get(ccCurent);
@@ -185,7 +164,7 @@ public class ProcesorDocumente {
                     }else{
                         actCurent = cerereCurenta.getAct(tipPaginaCurenta);
                     };
-                }
+                } */
                 paginiCurente.add(i);
                 
             }
@@ -201,12 +180,12 @@ public class ProcesorDocumente {
                         }else{
                             Act actNou = new Act(numarCerereCurent, tipPaginaCurenta, f);
                             actNou.setNrPaginiScanate(paginiCurente.size());
-                            cerereCurenta.addAct(actNou);
+//                            cerereCurenta.addAct(actNou);
                     }
                     paginiCurente.clear();
             }
         }
-        
+    }
 
     }
 
@@ -252,7 +231,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                         paginiCurente.add(++i);
 
                     System.out.println("Salvam: " + denumireFisier);
-                    File f = pdfService.salveazaGrupPagini(document, paginiCurente, denumireFisier);
+                    pdfService.salveazaGrupPagini(document, paginiCurente, denumireFisier);
                     paginiCurente.clear();
 
                     } catch (IOException e) {
@@ -309,9 +288,9 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                 System.out.println(doc.getNumberOfPages()+" pagini. Totale:"+listPagini.size());
                 if (tip == TipPagina.CIM || tip == TipPagina.CI ) paginiInPdf = 1; 
                 System.out.print("tiparim " + numeFisier+" " );
-//                if (tip != TipPagina.CI)
-//                    if (tip == TipPagina.Constatator) printService.printeazaCuFoxit(f,2);
-//                else printService.printeazaCuFoxit(f,1);
+                if (tip != TipPagina.CI)
+                    if (tip == TipPagina.Constatator) pdfPrintService.printeazaCuFoxit(f,2);
+                else pdfPrintService.printeazaCuFoxit(f,1);
                 System.out.println("trecut cu succes" );
 
                 if (tip == TipPagina.ListaVerificare) {
@@ -331,7 +310,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                     }
                     cerereCurenta = new Cerere(numarS, "negasit", "negasit", "negasit");
                 }
-                cerereCurenta.addAct(act);
+                 cerereCurenta.addAct(tip, paginiInPdf);
                 lotCereri.adauga(cerereCurenta);    
             } catch (Exception e) {
                 System.out.println("Eroare la citirea fișierului: " + numeFisier);
