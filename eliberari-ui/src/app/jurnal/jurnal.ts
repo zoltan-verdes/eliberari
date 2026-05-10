@@ -1,4 +1,6 @@
-import { AfterViewChecked, Component, ElementRef, Input, ViewChild } from '@angular/core';
+
+import { AfterViewChecked, Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { LogService } from '../log.service';
 
 
 @Component({
@@ -7,8 +9,11 @@ import { AfterViewChecked, Component, ElementRef, Input, ViewChild } from '@angu
   templateUrl: './jurnal.html',
   styleUrl: './jurnal.scss',
 })
+
 export class Jurnal implements AfterViewChecked {
-   @Input() logs: any[] = [];
+  
+   private logService = inject(LogService);
+   logs = this.logService.logs;
 
    // Referință către elementul de log pentru autoscroll
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;

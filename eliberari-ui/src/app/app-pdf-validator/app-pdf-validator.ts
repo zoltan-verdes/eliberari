@@ -1,6 +1,7 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdfViewerModule, PDFDocumentProxy } from 'ng2-pdf-viewer';
+import { PdfService } from '../pdf-service';
 
 @Component({
   selector: 'app-pdf-validator',
@@ -10,9 +11,17 @@ import { PdfViewerModule, PDFDocumentProxy } from 'ng2-pdf-viewer';
   styleUrl: './app-pdf-validator.scss'
 })
 export class PdfValidatorComponent {
-  // Primim fișierul și starea paginilor de la părinte
 
-  fileInput = input.required<File | null>();
+
+
+  private pdfService = inject(PdfService);
+  fileInput = this.pdfService.doc;
+  pageStatuses = this.pdfService.pageStatuses;
+
+  
+  // Primim fișierul și starea paginilor de la părinte
+   
+//  fileInput = input.required<File | null>();
 
   // Conversia are loc aici, automat, ori de câte ori fileInput se schimbă
   pdfSrc = computed(() => {
@@ -25,7 +34,7 @@ export class PdfValidatorComponent {
 
 
 //  pdfSrc = input.required<File | string | Uint8Array | null>();
-  pageStatuses = input.required<boolean[]>(); // true = păstrat, false = ignorat
+ // pageStatuses = input.required<boolean[]>(); // true = păstrat, false = ignorat
   
   // Trimitem modificările înapoi la părinte
   statusChanged = output<boolean[]>();

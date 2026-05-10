@@ -93,7 +93,7 @@ public class ImageProcessor {
             }
         }
 //        System.out.println("Puncte gasite "+pixeliColorati+"din totalul de "+(width * height /4));
-        return pixeliColorati < 100;
+        return pixeliColorati < 200;
     }
 
 

@@ -1,59 +1,28 @@
 package ro.onrc.eliberari.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.File;
 
 public class Act {
     private final long numar;
-    private final TipPagina tipPagina;
+    private final TipAct tipAct;
     private final String denumire_fisier;
-    private int nrPaginiLot = 0;
-    private int nrPaginiScanate = 0;
-    private File fisierLot=null, fisierScanat=null;
+    private int nrPagini = 0;
 
-    public Act(long numar, TipPagina tipPagina, String denumire) {
+    public Act(long numar, TipAct tipPagina, String denumire) {
         this.numar = numar;
-        this.tipPagina = tipPagina;
+        this.tipAct = tipPagina;
         this.denumire_fisier = denumire;
     }
 
-
-    public Act(long numar, TipPagina tipPagina, String denumire, int nrPaginiLot, File fisier) {
+    public Act(long numar, TipAct tipPagina, String denumire, int nrPagini) {
         this.numar = numar;
-        this.tipPagina = tipPagina;
+        this.tipAct = tipPagina;
         this.denumire_fisier = denumire;
-        this.nrPaginiLot = nrPaginiLot;
-        this.fisierLot = fisier;
+        this.nrPagini = nrPagini;
     }
 
-    public Act(long numar, TipPagina tipPagina, File fisier) {
-        this.numar = numar;
-        this.tipPagina = tipPagina;
-        this.denumire_fisier = "";
-        this.fisierScanat = fisier;
-    }
-
-
-
-    public TipPagina getTipPagina() { return tipPagina; }
+    public TipAct getTipAct() { return tipAct; }
     public String getDenumire_fisier() { return denumire_fisier; }
-    public int getNrPaginiLot() { return nrPaginiLot; }
-    public int getNrPaginiScanate() { return nrPaginiScanate; }
+    public int getNrPagini() { return nrPagini; }
     public long getNumar() { return numar; }
-    public void setNrPaginiScanate(int nr) { this.nrPaginiScanate = nr; }
-    public void setFisierScanat(File fisier) { this.fisierScanat = fisier; }
-    public File getFisierScanat() { return fisierScanat; }
-
-
-
- 
-    public boolean paginiCorespund() { 
-        return nrPaginiLot > 0 && nrPaginiLot == nrPaginiScanate; 
-    }
-
-    public String getStatusPaginatie() { return nrPaginiScanate + "/" + nrPaginiLot; }
-    @JsonIgnore
-    public File getFisierLot() { return fisierLot; }
-    public void setFisierLot(File fisier) { this.fisierLot = fisier; }
 
 }

@@ -5,7 +5,7 @@ import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.model.Act;
 import ro.onrc.eliberari.model.LotCereri;
 import ro.onrc.eliberari.model.InfoPagina;
-import ro.onrc.eliberari.model.TipPagina;
+import ro.onrc.eliberari.model.TipAct;
 import ro.onrc.eliberari.service.DocumentOptimizer;
 import ro.onrc.eliberari.service.PdfPrintService;
 import ro.onrc.eliberari.service.PdfService;
@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,125 +69,6 @@ public class ProcesorDocumente {
      */
 
 
-    public void recunoastereActeScanate(File fisier, LogListener listener) throws Exception {
-
-        Semaphore ocrLimit = new Semaphore(40);
-
-        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
-        try (PDDocument document = Loader.loadPDF(fisier_optimizat)) {
-            List<Integer> paginiCurente = new ArrayList<>();
-
-            int nrPagini = document.getNumberOfPages();
-            System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
-            if (nrPagini != listPagini.size()){
-                System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
-                return;
-            }
-
-            InfoPagina[] infoPagini = new InfoPagina[nrPagini];
-            CountDownLatch latch = new CountDownLatch(nrPagini);
-
-            InfoPagina infoPag;
-
-            for (int i = 0; i < nrPagini; i++) {
-                final int index = i;
-                Thread.ofVirtual().start(() -> {
-                    try {
-                        ocrLimit.acquire();
-                        var imagine = pdfService.randeazaPagina(document, index);
-                        System.out.println("procesam pagina " + index + " dimensiunea (" + imagine.getWidth() + ","
-                                + imagine.getHeight() + ")");
-
-                        infoPagini[index] = procPagina.prelucrarePagina(imagine);
-
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt(); // Bună practică pentru thread-uri
-
-                    } catch (IOException e) {
-                        // Aici gestionezi eroarea de PDF (logare sau marcare pagină ca eșuată)
-                        System.err.println("Eroare la pagina " + index + ": " + e.getMessage());
-                    } finally {
-                        ocrLimit.release();
-                        latch.countDown();
-                    }
-                });
-            }
-            latch.await();
-
-            int numarCerereCurent = 0;
-            TipPagina tipPaginaCurenta = TipPagina.Altele;
-            Cerere cerereCurenta = null;
-            Act actCurent = null;
-            
-            for (int i = 0; i < nrPagini; i++) {
-                infoPag = infoPagini[i];
-                if (infoPag.getTipPagina() == TipPagina.PagGoala) continue;
-                
-                System.out.println("Pagina tip  -- " + infoPag.getTipPagina());
-                System.out.println("Barcode  -- " + infoPag.getBarcode());
-                    
-                // intai salvam paginile anterioare daca avem o pagina noua de act principal
-                if ((cerereCurenta != null)&&(infoPag.isActPrincipal())) {
-                    System.out.println("Salvam: " + numarCerereCurent + "_" + paginiCurente.size() + ".pdf");
-                    File f = pdfService.salveazaGrupPagini(document, paginiCurente, numarCerereCurent + "_"
-                            + "_" + paginiCurente.size() + ".pdf");
-                    if (actCurent != null) {
-                            actCurent.setNrPaginiScanate(paginiCurente.size());
-                            actCurent.setFisierScanat(f);
-                        }else{
-                            Act actNou = new Act(numarCerereCurent, tipPaginaCurenta, f);
-                            actNou.setNrPaginiScanate(paginiCurente.size());
-//                            cerereCurenta.addAct(actNou);
-                    }
-                    paginiCurente.clear();
-                }   
-
-                if (infoPag.isActPrincipal()) {
-                    if (!infoPag.getNumar().equals("negasit")) numarCerereCurent = infoPag.getNumarInt();
-                    if (lotCereri.getCerere(numarCerereCurent).isEmpty()) {
-                        cerereCurenta = new Cerere(infoPag);
-                        lotCereri.adauga(cerereCurenta);
-                    } else {
-                        cerereCurenta = lotCereri.getCerere(numarCerereCurent).orElseThrow();
-                    };
-                    tipPaginaCurenta = infoPag.getTipPagina();
-/*                    if (tipPaginaCurenta == TipPagina.Constatator) {
-                        listCC = cerereCurenta.getConstatatoare();
-                        if (ccCurent < listCC.size()) {
-                            actCurent = listCC.get(ccCurent);
-                            ccCurent++;
-                        } else {
-                            actCurent = null;
-                        };
-                    }else{
-                        actCurent = cerereCurenta.getAct(tipPaginaCurenta);
-                    };
-                } */
-                paginiCurente.add(i);
-                
-            }
-
-            // Salvăm și ultimul set de pagini
-            if (!paginiCurente.isEmpty()) {
-                    System.out.println("Salvam: " + numarCerereCurent + "_" + paginiCurente.size() + ".pdf");
-                    File f = pdfService.salveazaGrupPagini(document, paginiCurente, numarCerereCurent + "_"
-                            + "_" + paginiCurente.size() + ".pdf");
-                    if (actCurent != null) {
-                            actCurent.setNrPaginiScanate(paginiCurente.size());
-                            actCurent.setFisierScanat(f);
-                        }else{
-                            Act actNou = new Act(numarCerereCurent, tipPaginaCurenta, f);
-                            actNou.setNrPaginiScanate(paginiCurente.size());
-//                            cerereCurenta.addAct(actNou);
-                    }
-                    paginiCurente.clear();
-            }
-        }
-    }
-
-    }
-
-
 public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
         List<String> log = new ArrayList<>();
@@ -211,19 +90,18 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                 try {
                     var imagine = pdfService.randeazaPagina(document, i, 150); 
                     System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")");
-                    int numarPagini = listPagini.get(i).getNrPaginiLot();
+                    int numarPagini = listPagini.get(i).getNrPagini();
 
-                    if (listPagini.get(i).getTipPagina() == TipPagina.CI) {;
+                    if (listPagini.get(i).getTipAct() == TipAct.CI) {;
                         // trebuie sa rotim pagina cu 90 grade pentru a citi corect codul CI
                         imagine = ImageProcessor.rotate90(imagine);
                     };
                     
-                    if (!procPagina.isMarkerPresent(imagine, listPagini.get(i).getTipPagina())) {
-                        log.add("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
-                        System.out.println("Pagina " + i + " nu este "+listPagini.get(i).getTipPagina());
+                    if (!procPagina.isMarkerPresent(imagine, listPagini.get(i).getTipAct())) {
+                        log.add("Pagina " + i + " nu este "+listPagini.get(i).getTipAct());
+                        System.out.println("Pagina " + i + " nu este "+listPagini.get(i).getTipAct());
 //                        return log;
                     }
-                    listPagini.get(i).setNrPaginiScanate(numarPagini);
                     
                     String denumireFisier = listPagini.get(i).getDenumire_fisier();
                     paginiCurente.add(i);
@@ -281,23 +159,24 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
             String numarS = String.valueOf(numarL);
             
             // Determinăm tipul actului pe baza numelui
-            TipPagina tip = determinaTipActDinNume(numeFisier);
+            TipAct tip = determinaTipActDinNume(numeFisier);
             int paginiInPdf = 0;
             try (PDDocument doc = Loader.loadPDF(f)) {
                 paginiInPdf = doc.getNumberOfPages();
                 System.out.println(doc.getNumberOfPages()+" pagini. Totale:"+listPagini.size());
-                if (tip == TipPagina.CIM || tip == TipPagina.CI ) paginiInPdf = 1; 
+                if (tip == TipAct.CIM || tip == TipAct.CI ) paginiInPdf = 1; 
                 System.out.print("tiparim " + numeFisier+" " );
-                if (tip != TipPagina.CI)
-                    if (tip == TipPagina.Constatator) pdfPrintService.printeazaCuFoxit(f,2);
-                else pdfPrintService.printeazaCuFoxit(f,1);
+
+//                if (tip != TipAct.CI)
+//                    if (tip == TipAct.Constatator) pdfPrintService.printeazaCuFoxit(f,2);
+//                else pdfPrintService.printeazaCuFoxit(f,1);
                 System.out.println("trecut cu succes" );
 
-                if (tip == TipPagina.ListaVerificare) {
+                if (tip == TipAct.ListaVerificare) {
                     file_lista_verificare = true;
                     continue; // Nu adăugăm lista de verificare ca act, ci o asociem cererii
                 }
-                Act act = new Act(numarL, tip, numeFisier, paginiInPdf, f);
+                Act act = new Act(numarL, tip, numeFisier, paginiInPdf);
                 
                 listPagini.add(act);
                 for(int i=1;i<paginiInPdf;i++){
@@ -345,17 +224,17 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
         return 0;
     }
 
-    private TipPagina determinaTipActDinNume(String nume) {
+    private TipAct determinaTipActDinNume(String nume) {
         
         // AICI vei adăuga pattern-urile regex finale
-        if (nume.contains("INCHEIERE")) return TipPagina.Incheiere;
-        if (nume.contains("inregistrareMentiuni")) return TipPagina.CIM;
-        if (nume.contains("CertificatConstatator")) return TipPagina.Constatator;
-        if (nume.contains("CertificatInmatriculare"))  return TipPagina.CI;
-        if (nume.contains("FI-Punctual-")) return TipPagina.ListaVerificare;
+        if (nume.contains("INCHEIERE")) return TipAct.Incheiere;
+        if (nume.contains("inregistrareMentiuni")) return TipAct.CIM;
+        if (nume.contains("CertificatConstatator")) return TipAct.Constatator;
+        if (nume.contains("CertificatInmatriculare"))  return TipAct.CI;
+        if (nume.contains("FI-Punctual-")) return TipAct.ListaVerificare;
         
         
-        return TipPagina.Altele;
+        return TipAct.Altele;
     }
 
     public BufferedImage getCodCI() {
@@ -367,10 +246,10 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
 class FisiereActe{
     private int numarCerere;
-    private TipPagina tipPagina;
+    private TipAct tipPagina;
     private String denumireFisier;
 
-    public FisiereActe(int numarCerere, TipPagina tipPagina, String denumireFisier) {
+    public FisiereActe(int numarCerere, TipAct tipPagina, String denumireFisier) {
         this.numarCerere = numarCerere;
         this.tipPagina = tipPagina;
         this.denumireFisier = denumireFisier;
@@ -378,7 +257,7 @@ class FisiereActe{
     public int getNumarCerere() {
         return numarCerere;
     }
-    public TipPagina getTipPagina() {
+    public TipAct getTipPagina() {
         return tipPagina;
     }
     public String getDenumireFisier() {

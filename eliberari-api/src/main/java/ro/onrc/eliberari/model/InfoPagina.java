@@ -10,15 +10,15 @@ public class InfoPagina {
     private String data; // Poți folosi String sau LocalDate dacă vrei să-l formatezi ulterior
     private String cui;
     private String firma;
-    private TipPagina tipPag;
+    private TipAct tipPag;
     private String barcode;
 
     // Constructor, Getters și Setters
-    public InfoPagina(TipPagina tipPag) {
+    public InfoPagina(TipAct tipPag) {
         this.tipPag = tipPag;
     }
 
-    public InfoPagina(TipPagina tipPag, String numar, String data, String cui, String firma, String barcode) {
+    public InfoPagina(TipAct tipPag, String numar, String data, String cui, String firma, String barcode) {
         this.tipPag = tipPag;
         this.numar = numar;
         this.data = data;
@@ -60,7 +60,7 @@ public class InfoPagina {
         return firma;
     }
 
-    public TipPagina getTipPagina() {
+    public TipAct getTipPagina() {
         return tipPag;
     }
 
@@ -70,7 +70,7 @@ public class InfoPagina {
 
     
     public boolean isActPrincipal() {
-        return this.tipPag == TipPagina.Incheiere || this.tipPag == TipPagina.CI || this.tipPag == TipPagina.CIM || this.tipPag  == TipPagina.Constatator;
+        return this.tipPag == TipAct.Incheiere || this.tipPag == TipAct.CI || this.tipPag == TipAct.CIM || this.tipPag  == TipAct.Constatator;
     }
 
     @Override

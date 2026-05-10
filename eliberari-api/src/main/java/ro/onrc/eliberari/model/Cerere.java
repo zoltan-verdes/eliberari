@@ -34,7 +34,7 @@ public class Cerere implements Comparable<Cerere> {
      */
     
 
-    public void addAct(TipPagina tip, int nrPagini) {
+    public void addAct(TipAct tip, int nrPagini) {
         switch (tip) {
             case Incheiere -> {inch = true;}
             case CI -> {ci = true; pagTotal++;}
@@ -42,6 +42,16 @@ public class Cerere implements Comparable<Cerere> {
             case Constatator -> {cc+=nrPagini; pagTotal+=nrPagini;}
             default -> {;}
         }
+    }
+
+    public void addAct(Act act){
+            switch (act.getTipAct()) {
+                case Incheiere -> {inch = true;}
+                case CI -> {ci = true; pagTotal++;}
+                case CIM -> {cim = true; pagTotal++;}
+                case Constatator -> {cc+=act.getNrPagini(); pagTotal+=act.getNrPagini();}
+                default -> {;}
+            }
     }
 
     public boolean getInch() { return inch; }

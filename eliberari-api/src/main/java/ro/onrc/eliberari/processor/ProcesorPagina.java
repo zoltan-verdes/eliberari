@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import ro.onrc.eliberari.model.TipPagina;
+import ro.onrc.eliberari.model.TipAct;
 import ro.onrc.eliberari.config.AppConstants;
 import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.service.BarcodeService;
@@ -31,23 +31,23 @@ public class ProcesorPagina {
         String cui = "negasit";
         String firma = "negasit";
         String barcode = "";
-        TipPagina tipPag = TipPagina.Altele;
+        TipAct tipPag = TipAct.Altele;
         if (ImageProcessor.estePaginaAlba(imagine))
-            return new InfoPagina(TipPagina.PagGoala);
+            return new InfoPagina(TipAct.PagGoala);
         String text = ocrService.ocerizeaza(imagine, 0, 0, imagine.getWidth(), imagine.getHeight() / 3);
         System.out.println("---\n---\n" + text + "\n----");
         if (text.contains("NCHEIERE"))
-            tipPag = TipPagina.Incheiere;
+            tipPag = TipAct.Incheiere;
         if (text.contains("CERTIFICAT DE"))
-            tipPag = TipPagina.CIM;
+            tipPag = TipAct.CIM;
         if (text.contains("CONSTATATOR"))
-            tipPag = TipPagina.Constatator;
+            tipPag = TipAct.Constatator;
         System.out.println("Tip act: " + tipPag);
         barcode = barcodeService.citesteCod(imagine, 230, 590, 600, 250);
         if (barcode == null)
             barcode = barcodeService.citesteCod(imagine, 700, 2600, 350, 450);
 
-        if (tipPag != TipPagina.Altele) {
+        if (tipPag != TipAct.Altele) {
             Matcher potrivire = cautaPatternMultiplu(text,
                     "DOSAR\\s*NR.\\s*(\\d+)\\s*/\\s*(\\d{2}[.\\/-]\\d{2}[.\\/-]\\d{4})");
             if (potrivire.find()) {
@@ -65,7 +65,7 @@ public class ProcesorPagina {
     }
 
 
-    public boolean isMarkerPresent(BufferedImage imagine, TipPagina tipPagina) {
+    public boolean isMarkerPresent(BufferedImage imagine, TipAct tipPagina) {
         switch (tipPagina) {
             case Incheiere: return isIncheiere(imagine);
             case Constatator: return isConstator(imagine);

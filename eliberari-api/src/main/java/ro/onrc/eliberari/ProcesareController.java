@@ -116,15 +116,12 @@ public class ProcesareController {
     @GetMapping(value = "/stream-image", produces = "text/event-stream;charset=UTF-8")
     public SseEmitter streamImage() throws IOException {
         SseEmitter emitter = new SseEmitter();
-
-        // Presupunem că ai BufferedImage-ul tău (poate cel rotit)
         BufferedImage img = procesor.getCodCI();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "png", baos);
         String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
 
-        // Trimitem string-ul prin SSE
         emitter.send(SseEmitter.event().name("image-data").data(base64Image));
 
         return emitter;

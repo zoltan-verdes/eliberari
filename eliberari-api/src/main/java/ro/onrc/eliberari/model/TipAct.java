@@ -1,18 +1,16 @@
 package ro.onrc.eliberari.model;
 
-public enum TipPagina {
-    PagGoala, 
+public enum TipAct {
     Incheiere,
     Constatator,
     CIM,
     CI,
     ListaVerificare,
+    PagGoala,
     Altele;
 
     public String formaScurta() {
         switch (this) {
-            case PagGoala:
-                return "PG";
             case Incheiere:
                 return "INCH";
             case Constatator:
@@ -23,8 +21,6 @@ public enum TipPagina {
                 return "CI";
             case ListaVerificare:
                 return "LV";
-            case Altele:
-                return "ALT";
             default:
                 return this.name();
         }
