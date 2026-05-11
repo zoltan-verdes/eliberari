@@ -63,9 +63,7 @@ public class ImageProcessor {
                 }
             }
         }
-
         return binary;
-
     }
 
 

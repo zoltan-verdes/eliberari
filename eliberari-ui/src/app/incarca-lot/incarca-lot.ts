@@ -197,3 +197,8 @@ this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subsc
 
 
 }
+
+  export interface DateCompletateDTO {
+  pagIgnorate: boolean[];
+  log: string[];
+}

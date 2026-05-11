@@ -18,3 +18,8 @@ header{
     padding: 20px;
     background-color: #f9f9f9;
 }
+app-pdf-validator {
+    flex: 1; // Ocupă cealaltă cotă egală din spațiul rămas
+    display: block; // Asigură-te că se comportă ca un element de tip block
+    overflow-y: auto; // Adaugă scroll dacă conținutul PDF este mare
+}

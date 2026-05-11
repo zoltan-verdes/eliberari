@@ -81,17 +81,17 @@ public class ProcesorPagina {
     }
 
     public boolean isConstator(BufferedImage imagine) {
-        String text = ocrService.ocerizeaza(imagine, AppConstants.CC_X, AppConstants.CC_Y, AppConstants.CC_WIDTH, AppConstants.CC_HEIGHT);
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CC_X, AppConstants.CC_Y, AppConstants.CC_WIDTH, AppConstants.CC_HEIGHT, true);
         return text.contains("ERTIFICAT CONSTATATOR");
     }
 
     public boolean isCI(BufferedImage imagine) {
-        String text = ocrService.ocerizeaza(imagine, AppConstants.CI_X, AppConstants.CI_Y, AppConstants.CI_WIDTH, AppConstants.CI_HEIGHT);
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CI_X, AppConstants.CI_Y, AppConstants.CI_WIDTH, AppConstants.CI_HEIGHT, true);
         return text.contains("ERTIFICAT DE");
     }
 
     public boolean isCIM(BufferedImage imagine) {
-        String text = ocrService.ocerizeaza(imagine, AppConstants.CIM_X, AppConstants.CIM_Y, AppConstants.CIM_WIDTH, AppConstants.CIM_HEIGHT);
+        String text = ocrService.ocerizeaza(imagine, AppConstants.CIM_X, AppConstants.CIM_Y, AppConstants.CIM_WIDTH, AppConstants.CIM_HEIGHT, true);
         return text.contains("ERTIFICAT DE");
     }
 

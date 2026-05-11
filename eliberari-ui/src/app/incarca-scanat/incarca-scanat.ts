@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, computed, inject, NgZone, signal, ViewChild, WritableSignal } from '@angular/core';
+import { ListLoturi } from './../list-loturi/list-loturi';
+import { Rezultat } from '../rezultat/rezultat';
+import { LogService } from '../log.service';
 
 @Component({
   selector: 'app-incarca-scanat',
@@ -6,4 +10,191 @@ import { Component } from '@angular/core';
   templateUrl: './incarca-scanat.html',
   styleUrl: './incarca-scanat.scss',
 })
-export class IncarcaScanat {}
+export class IncarcaScanat {
+  private http = inject(HttpClient);
+  private zone = inject(NgZone);
+  private logService = inject(LogService);
+  logs = this.logService.logs;
+  isProcessing = signal(false);
+  rezultate = signal<any[]>([]);
+  selectedFisLot = signal<File | null>(null);
+  selectedFisScan = signal<File | null>(null);
+  isUploading = signal(false);
+  mesaj = signal<string | null>(null);
+  // Adaugă noi semnale pentru starea PDF-ului
+  selectedPdfFile = signal<File | null>(null);
+  
+
+
+
+  @ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
+
+  pornesteProcesare() {
+    this.isProcessing.set(true);
+    this.logService.logs.set(['Inițializare conexiune...']);
+    this.rezultate.set([]);
+
+    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream');
+
+    eventSource.onmessage = (event) => {
+      this.zone.run(() => {
+        // event.data contine textul trimis de sseListener.onLog
+        this.logService.logs.update((l) => [...l, event.data]);
+      });
+    };
+
+    // Prindem evenimentul special pentru tabel
+    eventSource.addEventListener('tabel', (event: any) => {
+      this.zone.run(() => {
+        this.rezultate.set(JSON.parse(event.data));
+      });
+    });
+
+    //Prindem evenimentul de stream imagine
+
+    eventSource.onerror = (error) => {
+      this.zone.run(() => {
+        console.log('Procesare finalizată sau întreruptă.');
+        eventSource.close();
+        this.isProcessing.set(false);
+      });
+    };
+  }
+  imagineCodBare = signal<string | null>(null);
+
+  aduImaginea() {
+    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream-image');
+
+    eventSource.addEventListener('image-data', (event: any) => {
+      this.zone.run(() => {
+        if (!event.data || event.data === 'null') {
+          console.log('Imagine neidentificată');
+          this.imagineCodBare.set(null);
+        } else {
+          // Salvăm string-ul base64 în signal
+          this.imagineCodBare.set(`data:image/png;base64,${event.data}`);
+        }
+        eventSource.close(); // Închidem după ce am primit imaginea
+      });
+    });
+
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
+  }
+
+  onFisLotSelected(event: any) {
+    const fisLot: File | undefined = event.target.files?.[0];
+    const mime = fisLot?.type?.toLowerCase() || '';
+    const name = fisLot?.name?.toLowerCase() || '';
+    const isZip = mime.includes('zip') || name.endsWith('.zip');
+
+    if (fisLot && isZip) {
+      this.selectedFisLot.set(fisLot);
+    } else {
+      alert('Selectați un fișier zip valid. Tip fișier selectat: ' + (fisLot?.type || 'necunoscut'));
+      this.selectedFisLot.set(null);
+    }
+  }
+
+  onFisScanSelected(event: any) {
+    const fisScan = event.target.files[0];
+    if (fisScan && fisScan.type === 'application/pdf') {
+      this.selectedFisScan.set(fisScan);
+    } else {
+      alert('Selectați un fișier pdf valid. Tip fisier selectat: '+fisScan.type);
+      this.selectedFisScan.set(null);
+    }
+  }
+
+  uploadLot() {
+    this.uploadFile(this.selectedFisLot, 'upload');
+  }
+
+  uploadScan() {
+    this.uploadFile(this.selectedFisScan, 'upload-scan');
+  }
+
+  uploadFile(fis: WritableSignal<File | null>, endpoint:string) {
+    console.log('am intrat in upload');
+    if (!fis()) { 
+        console.error('Semnalul nu este inițializat sau fișierul lipsește');
+        return; 
+    }
+
+// 1. Trimitem fișierul către semnalul ce va fi pasat componentei FIU
+    
+    this.selectedPdfFile.set(fis());
+
+    this.isUploading.set(true);
+    const formData = new FormData();
+    formData.append('file', fis()!);
+    
+  
+       // Presupunând că serverul returnează numele fișierului creat sau putem folosi fis.name
+  
+
+this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
+    next: (response) => {
+        console.log('File uploaded:', response);
+        this.logService.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name + ' - ' + response]);
+        
+        // Extragem ultimul string din răspuns pentru popup
+        const rString = (typeof response === 'string') ? response : JSON.stringify(response);
+    
+        const linii = rString.split('\n').filter((l: string) => l.trim());
+//        const linii = response.split('\n').filter((l: string) => l.trim());
+        const ultimulMesaj = linii[linii.length - 1]?.trim();
+        if (ultimulMesaj) {
+          this.mesaj.set(ultimulMesaj);
+          setTimeout(() => this.mesaj.set(null), 5000);
+        } 
+        
+       const numeLotNou = fis()!.name.replace('.zip', ''); 
+       this.listLoturiComp.adauga(numeLotNou);
+
+
+      this.isUploading.set(false);
+        fis.set(null);
+        // Reset the input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+
+
+/*
+      // Presupunem că response.ignoredPages este un array de boolean
+      this.pageStatuses.set(response.ignoredPages);
+*/
+
+
+    },
+    error: (error) => {
+      console.error('Upload failed:', error);
+        this.logService.logs.update((l) => [...l, 'Eroare la încărcarea fișierului']);
+      this.isUploading.set(false);
+    }
+  });
+}  
+
+  rezultateCompletate = computed(() => {
+    const dateReale = this.rezultate();
+    const randuriGoaleNecesare = Math.max(0, 10 - dateReale.length);
+
+    // Creăm un array cu restul de rânduri goale
+    const goale = Array(randuriGoaleNecesare).fill({
+      numar: '',
+      data: '',
+      firma: '',
+      cui: '',
+      incheiere: null,
+      ci: null,
+      cim: null,
+      cc: null
+    });
+
+    return [...dateReale, ...goale];
+  });
+
+
+
+}

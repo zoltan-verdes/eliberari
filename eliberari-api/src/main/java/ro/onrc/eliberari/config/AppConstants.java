@@ -17,21 +17,21 @@ public class AppConstants {
 
 // CONSTATATOR  
     public static final int CC_Y = 350;
-    public static final int CC_HEIGHT = 150;
+    public static final int CC_HEIGHT = 70;
     public static final int CC_X = 420;
-    public static final int CC_WIDTH = 420;
+    public static final int CC_WIDTH = 440;
 
 // CIM
     public static final int CIM_Y = 200;
     public static final int CIM_HEIGHT = 100;
     public static final int CIM_X = 90;
-    public static final int CIM_WIDTH = 250;
+    public static final int CIM_WIDTH = 350;
 
 
 //CI
     public static final int CI_Y = 300;
-    public static final int CI_HEIGHT = 125;
-    public static final int CI_X = 350;
-    public static final int CI_WIDTH = 1050;
+    public static final int CI_HEIGHT = 110;
+    public static final int CI_X = 340;
+    public static final int CI_WIDTH = 1070;
 
 }

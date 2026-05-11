@@ -4,6 +4,7 @@ import ro.onrc.eliberari.LogListener;
 import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.model.Act;
 import ro.onrc.eliberari.model.LotCereri;
+import ro.onrc.eliberari.model.ScanatDTO;
 import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.model.TipAct;
 import ro.onrc.eliberari.service.DocumentOptimizer;
@@ -42,6 +43,7 @@ public class ProcesorDocumente {
 
     private BufferedImage cod_ci;
     private DocumentOptimizer docOptimezer;
+    private int nrPaginiIgnorate = 0;
 
 
     // Spring injectează automat serviciile prin constructor
@@ -68,44 +70,57 @@ public class ProcesorDocumente {
      * în ordinea riguroasă: Incheiere, CI, CIM, Constatatoare.
      */
 
+public boolean[] verificamIgnorate(PDDocument doc) throws IOException {
+    boolean[] paginiIgnorate = new boolean[doc.getNumberOfPages()];
+    for (int i = 0; i < doc.getNumberOfPages(); i++) {
+        BufferedImage imgBruta = pdfService.randeazaPagina(doc, i);
+        paginiIgnorate[i] = ImageProcessor.estePaginaAlba(imgBruta);
+        if (paginiIgnorate[i]) nrPaginiIgnorate++;
+    }
+    return paginiIgnorate;
+}
 
-public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
+
+public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
 
         List<String> log = new ArrayList<>();
-        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
-        try (PDDocument document = Loader.loadPDF(fisier_optimizat)) {
+//        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
+        try (PDDocument document = Loader.loadPDF(fisier)) {
+            boolean[] paginiIgnorate = verificamIgnorate(document);
+
             List<Integer> paginiCurente = new ArrayList<>();
 
-            int nrPagini = document.getNumberOfPages();
+            int nrPagini = document.getNumberOfPages()-nrPaginiIgnorate;
             System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
             if (nrPagini != listPagini.size()){
                 log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
                 System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
                 return log;
             }
-
+            int index = 0;
             for (int i = 0; i < nrPagini; i++) {
                // verificam ca pagina scanata coresponde cu pagina din lista de pagini procesate anterior
-                if (listPagini.get(i)!=null) 
+                if (paginiIgnorate[i]) continue;
+                if (listPagini.get(index)!=null)
                 try {
                     var imagine = pdfService.randeazaPagina(document, i, 150); 
-                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")");
-                    int numarPagini = listPagini.get(i).getNrPagini();
+                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")  -  doc asteptat "+listPagini.get(i).getDenumire_fisier());
+                    int nrPaginiAct = listPagini.get(index).getNrPagini();
 
-                    if (listPagini.get(i).getTipAct() == TipAct.CI) {;
+                    if (listPagini.get(index).getTipAct() == TipAct.CI) {;
                         // trebuie sa rotim pagina cu 90 grade pentru a citi corect codul CI
                         imagine = ImageProcessor.rotate90(imagine);
                     };
                     
-                    if (!procPagina.isMarkerPresent(imagine, listPagini.get(i).getTipAct())) {
-                        log.add("Pagina " + i + " nu este "+listPagini.get(i).getTipAct());
-                        System.out.println("Pagina " + i + " nu este "+listPagini.get(i).getTipAct());
+                    if (!procPagina.isMarkerPresent(imagine, listPagini.get(index).getTipAct())) {
+                        log.add("Pagina " + i + " nu este "+listPagini.get(index).getTipAct());
+                        System.out.println("Pagina " + i + " nu este "+listPagini.get(index).getTipAct());
 //                        return log;
                     }
                     
-                    String denumireFisier = listPagini.get(i).getDenumire_fisier();
+                    String denumireFisier = listPagini.get(index).getDenumire_fisier();
                     paginiCurente.add(i);
-                    for (int j=1;j<numarPagini;j++)
+                    for (int j=1;j<nrPaginiAct;j++)
                         paginiCurente.add(++i);
 
                     System.out.println("Salvam: " + denumireFisier);
@@ -117,10 +132,11 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                         System.err.println("Eroare la pagina " + i + ": " + e.getMessage());
                         log.add("Eroare la pagina " + i + ": ");
                     }
+                    index++;
                 };
             }
 
-        return log;
+        return new ScanatDTO(null, log);
     }
         
     
