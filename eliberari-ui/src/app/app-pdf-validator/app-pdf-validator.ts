@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdfViewerModule, PDFDocumentProxy } from 'ng2-pdf-viewer';
-import { PdfService } from '../pdf-service';
+import { PdfService } from '../pdf.service';
 
 @Component({
   selector: 'app-pdf-validator',

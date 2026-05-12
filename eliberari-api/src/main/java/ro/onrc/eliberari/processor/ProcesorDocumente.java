@@ -37,7 +37,7 @@ public class ProcesorDocumente {
     private final PdfService pdfService;
     private final ProcesorPagina procPagina;
     private final ZipService zipService;
-    private final AppRepository actRepository;
+    private final AppRepository appRepository;
 
     private LotCereri lotCereri = new LotCereri();
     public List<Act> listPagini = new ArrayList<>();
@@ -54,7 +54,7 @@ public class ProcesorDocumente {
         this.pdfService = pdfService;
         this.docOptimezer = documentOptimizer;
         this.zipService = zipService;
-        this.actRepository = actRepository;
+        this.appRepository = actRepository;
         this.pdfPrintService = pdfPrintService;
     }
 
@@ -63,8 +63,8 @@ public class ProcesorDocumente {
         return lotCereri;
     }
 
-    public AppRepository getActRepository() {
-        return actRepository;
+    public AppRepository getAppRepository() {
+        return appRepository;
     }
 
     /**
@@ -87,13 +87,16 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
         List<String> log = new ArrayList<>();
 //        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
+        listPagini = appRepository.citesteLista(fisier.getName().replace(".pdf", ""));
+
         try (PDDocument document = Loader.loadPDF(fisier)) {
             boolean[] paginiIgnorate = verificamIgnorate(document);
 
             List<Integer> paginiCurente = new ArrayList<>();
 
-            File outputDir = new File(fisier.getAbsolutePath().replace(".pdf",""));
-            if (!outputDir.exists())  outputDir.mkdirs();
+            File outputDir = new File(fisier.getAbsolutePath().replace(".pdf","\\"));
+            System.out.println("Incercam sa creem folderul "+ outputDir.getAbsolutePath());
+            if (!outputDir.exists())  {outputDir.mkdirs();}
             else try (var files = Files.list(outputDir.toPath())) {
                 files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
             }            
@@ -134,7 +137,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                         {paginiCurente.add(++i);index++;}
 
                     System.out.println("Salvam: " + denumireFisier);
-                    pdfService.salveazaGrupPagini(document, paginiCurente, denumireFisier);
+                    pdfService.salveazaGrupPagini(document, paginiCurente, outputDir.getAbsolutePath(), denumireFisier);
                     paginiCurente.clear();
 
                     } catch (IOException e) {
@@ -160,7 +163,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
     public List<Cerere> proceseazaLot(File fisier) throws IOException {
         if (fisier == null) return null;
         List<File> fisiere = zipService.dezarhiveaza(fisier);
-
+        
         // 1. Sortăm lista după numărul extras din denumirea fișierului
         fisiere.sort((f1, f2) -> {
             long n1 = extrageNumarDinNume(f1.getName())*10+determinaTipActDinNume(f1.getName()).getPrioritate();
@@ -220,7 +223,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
         }
         System.out.println("punem in actRepository: " + fisier.getName());
-        actRepository.salveazaListaNoua(listPagini, fisier.getName().replace(".zip", ""));
+        appRepository.salveazaListaNoua(listPagini, fisier.getName().replace(".zip", ""));
 
         return lotCereri.getToate();
     }

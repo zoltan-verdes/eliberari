@@ -40,15 +40,7 @@ public class PdfService {
     }
 
     public File salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String numeFisier) throws IOException {
-        File fisier;
-        try (PDDocument nou = new PDDocument()) {
-            for (int index : pagini) {
-                nou.addPage(sursa.getPage(index));
-            };
-            fisier=new File(config.getOutputFolder() + numeFisier);
-            nou.save(fisier);
-            return fisier;
-        }
+        return salveazaGrupPagini(sursa, pagini, config.getOutputFolder() ,numeFisier);
     }
 
     public File salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String outputFolder , String numeFisier) throws IOException {
@@ -57,7 +49,7 @@ public class PdfService {
             for (int index : pagini) {
                 nou.addPage(sursa.getPage(index));
             };
-            fisier=new File(outputFolder + numeFisier);
+            fisier=new File(outputFolder+"\\" + numeFisier);
             nou.save(fisier);
             return fisier;
         }

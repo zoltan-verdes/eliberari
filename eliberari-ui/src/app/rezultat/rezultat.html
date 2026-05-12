@@ -4,12 +4,9 @@
       <tr>
         <th>Nr. Cerere</th>
         <th>Data</th>
-        <th>Firma</th>
-        <th>CUI</th>
-        <th>Încheiere</th>
         <th>CI</th>
         <th>CIM</th>
-        <th>CC (Total)</th>
+        <th>CC</th>
       </tr>
     </thead>
     <tbody>
@@ -17,12 +14,9 @@
         <tr>
           <td>{{ item.numar || '' }}</td>
           <td>{{ item.data || '' }}</td>
-          <td class="text-left">{{ item.firma || '' }}</td>
-          <td>{{ item.cui || '' }}</td>
-          <td [class.error]="!isComplet(item.incheiere)">{{ formatStatus(item.incheiere) }} <input type="checkbox" name=item.numar value={{isComplet(item.incheiere)}}></td>
-          <td [class.error]="!isComplet(item.ci)">{{ formatStatus(item.ci) }}</td>
-          <td [class.error]="!isComplet(item.cim)">{{ formatStatus(item.cim) }}</td>
-          <td [class.error]="!isComplet(item.cc)">{{ formatStatus(item.cc) }}</td>
+          <td >{{ formatStatus(item.ci) }}</td>
+          <td >{{ formatStatus(item.cim) }}</td>
+          <td >{{ formatStatus(item.cc) }}</td>
         </tr>
       }
     </tbody>

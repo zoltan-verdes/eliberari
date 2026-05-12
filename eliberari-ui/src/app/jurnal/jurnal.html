@@ -2,11 +2,12 @@
   @if (logs().length == 0) {
     <div class="placeholder">Așteptare comandă...</div>
   } @else {
+    <ul>
     @for (log of logs(); track $index) {
-      <div>
+      <li>
         {{ log }}
-      </div>
-    }
+      </li>
+    } </ul>
   }
 </div>
 

@@ -51,7 +51,7 @@ public class AppRepository {
 
     public File salveazaFisierIntrare(MultipartFile file)    {
         try {            
-            File inputDir = new File(appConfig.getOutputFolder());
+            File inputDir = new File(appConfig.getInputFolder());
             if (!inputDir.exists())  inputDir.mkdirs();
             else try (var files = Files.list(inputDir.toPath())) {
                 files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
@@ -72,20 +72,20 @@ public class AppRepository {
      * Adaugă automat timestamp-ul la denumirea fișierului.
      */
     public void salveazaListaNoua(List<Act> acte, String denumireFisier) {
-        String timestamp = LocalDateTime.now().format(formatter);
-        String numeFinal = denumireFisier + " - " + timestamp;
+//        String timestamp = LocalDateTime.now().format(formatter);
+//        String numeFinal = denumireFisier + " - " + timestamp;
         
         File folder = new File(appConfig.getLotFolder());
         if (!folder.exists()) {
             folder.mkdirs(); // Creăm folderul dacă nu există
         }
 
-        File fisierDestinatie = new File(folder, numeFinal+".json");
+        File fisierDestinatie = new File(folder, denumireFisier+".json");
 
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(fisierDestinatie, acte);
-            listLoturi.add(numeFinal); 
-            this.setActiv(numeFinal); 
+            listLoturi.add(denumireFisier); 
+            this.setActiv(denumireFisier); 
             System.out.println("Fișier salvat cu succes: " + fisierDestinatie.getAbsolutePath());
         } catch (IOException e) {
             // Probabil ar trebui să aruncăm o excepție personalizată aici
@@ -96,18 +96,18 @@ public class AppRepository {
     /**
      * Citește conținutul unui fișier JSON specificat și returnează lista de acte.
      */
-    public List<Act> citesteLista(String numeFisierComplet) {
-        File fisier = new File(appConfig.getLotFolder(), numeFisierComplet);
-        
+    public List<Act> citesteLista(String numeLot) {
+        String numeFisier = numeLot + ".json";
+        File fisier = new File(appConfig.getLotFolder(), numeFisier);
         if (!fisier.exists()) {
-            System.err.println("Fișierul nu a fost găsit: " + numeFisierComplet);
+            System.err.println("Fișierul JSON nu a fost găsit: " + fisier.getAbsolutePath());
             return new ArrayList<>();
         }
 
         try {
             return objectMapper.readValue(fisier, new TypeReference<List<Act>>() {});
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Eroare la citirea fișierului JSON: " + e.getMessage());
             return new ArrayList<>();
         }
     }

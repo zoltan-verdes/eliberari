@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, computed, Input, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 // import * as JSZip from 'jszip';
 
@@ -11,21 +11,21 @@ import { HttpClient } from '@angular/common/http';
 
 export class Rezultat {
   @Input() date: any[] = [];
+  rezultate = signal<any[]>([]);
 //  zipOriginal: JSZip | null = null;
   private curentUrl: string | null = null;
 
   formatStatus(status: any): string {
-    if (!status || (status.nrPagLot === 0 && status.nrPagScanat === 0)) return '- / -';
-    if (!status || (status.nrPagLot === 0)) return '- / '+  status.nrPagScanat;
-    if (!status || (status.nrPagScanat === 0)) return status.nrPagLot + ' / -';
+    if (!status || (status.ci === 0)) return ' - ';
+    if (!status || (status.cim === 0)) return '-';
+    if (!status || (status.cc === 0)) return '-';
 
     return `${status.nrPagLot} / ${status.nrPagScanat}`;
   }
 
-  isComplet(status: any): boolean {
-    return status?.complet ?? true;
-  }
-  
+
+
+
 /*
 async selecteazaDocument(file: File, numeDocument: string) {
   const jszip = new JSZip();
@@ -51,3 +51,40 @@ async selecteazaDocument(file: File, numeDocument: string) {
   }
 }  */
 }
+
+
+
+/*
+  niste cod legacy cu comunicare SSE
+
+    pornesteProcesare() {
+    this.logs.add('Inițializare conexiune...');
+    this.rezultate.set([]);
+
+    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream');
+
+    eventSource.onmessage = (event) => {
+      this.zone.run(() => {
+        // event.data contine textul trimis de sseListener.onLog
+        this.logs.addLogs(event.data);
+      });
+    };
+
+    // Prindem evenimentul special pentru tabel
+    eventSource.addEventListener('tabel', (event: any) => {
+      this.zone.run(() => {
+        this.rezultate.set(JSON.parse(event.data));
+      });
+    });
+
+    //Prindem evenimentul de stream imagine
+
+    eventSource.onerror = (error) => {
+      this.zone.run(() => {
+        console.log('Procesare finalizată sau întreruptă.');
+        eventSource.close();
+        this.isProcessing.set(false);
+      });
+    };
+  }
+*/

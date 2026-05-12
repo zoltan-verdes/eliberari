@@ -33,7 +33,7 @@
   
 
   <div>
-    <button [disabled]="isProcessing()" (click)="pornesteProcesare()">
+    <button [disabled]="isProcessing()" (click)="tipareste()">
       {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
     </button>
 
@@ -41,7 +41,6 @@
   </div>
 
   <app-list-loturi></app-list-loturi>
-  
 
-  <app-rezultat [date]="rezultateCompletate()"></app-rezultat>
+
 </div>

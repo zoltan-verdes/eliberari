@@ -16,7 +16,7 @@ export class IncarcaLot {
   private logService = inject(LogService);
   logs = this.logService.logs;
   isProcessing = signal(false);
-  rezultate = signal<any[]>([]);
+
   selectedFisLot = signal<File | null>(null);
   selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
@@ -29,37 +29,7 @@ export class IncarcaLot {
 
   @ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
 
-  pornesteProcesare() {
-    this.isProcessing.set(true);
-    this.logService.logs.set(['Inițializare conexiune...']);
-    this.rezultate.set([]);
 
-    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream');
-
-    eventSource.onmessage = (event) => {
-      this.zone.run(() => {
-        // event.data contine textul trimis de sseListener.onLog
-        this.logService.logs.update((l) => [...l, event.data]);
-      });
-    };
-
-    // Prindem evenimentul special pentru tabel
-    eventSource.addEventListener('tabel', (event: any) => {
-      this.zone.run(() => {
-        this.rezultate.set(JSON.parse(event.data));
-      });
-    });
-
-    //Prindem evenimentul de stream imagine
-
-    eventSource.onerror = (error) => {
-      this.zone.run(() => {
-        console.log('Procesare finalizată sau întreruptă.');
-        eventSource.close();
-        this.isProcessing.set(false);
-      });
-    };
-  }
   imagineCodBare = signal<string | null>(null);
 
   aduImaginea() {
@@ -134,24 +104,17 @@ export class IncarcaLot {
        // Presupunând că serverul returnează numele fișierului creat sau putem folosi fis.name
   
 
-this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
+this.http.post<string[]>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
-        this.logService.logs.update((l) => [...l, 'Fișier '+endpoint+' încărcat: ' + fis()!.name + ' - ' + response]);
-        
-        // Extragem ultimul string din răspuns pentru popup
-        const rString = (typeof response === 'string') ? response : JSON.stringify(response);
-    
-        const linii = rString.split('\n').filter((l: string) => l.trim());
-//        const linii = response.split('\n').filter((l: string) => l.trim());
-        const ultimulMesaj = linii[linii.length - 1]?.trim();
-        if (ultimulMesaj) {
-          this.mesaj.set(ultimulMesaj);
+        this.logService.add('Fișier '+endpoint+' încărcat: ' + fis()!.name);
+        this.logService.addLogs(response);
+        const [primul, ...loguri] =response;
+        if (loguri.length > 0) {
+          this.mesaj.set(loguri[loguri.length - 1]);
           setTimeout(() => this.mesaj.set(null), 5000);
         } 
-        
-       const numeLotNou = fis()!.name.replace('.zip', ''); 
-       this.listLoturiComp.adauga(numeLotNou);
+       this.listLoturiComp.adauga(primul);
 
 
       this.isUploading.set(false);
@@ -176,25 +139,9 @@ this.http.post<any>('http://localhost:8080/api/ocr/' + endpoint, formData).subsc
   });
 }  
 
-  rezultateCompletate = computed(() => {
-    const dateReale = this.rezultate();
-    const randuriGoaleNecesare = Math.max(0, 10 - dateReale.length);
-
-    // Creăm un array cu restul de rânduri goale
-    const goale = Array(randuriGoaleNecesare).fill({
-      numar: '',
-      data: '',
-      firma: '',
-      cui: '',
-      incheiere: null,
-      ci: null,
-      cim: null,
-      cc: null
-    });
-
-    return [...dateReale, ...goale];
-  });
-
+tipareste(){
+  console.log("tiparim");
+}
 
 }
 

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
+import ro.onrc.eliberari.processor.AppRepository;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
 import java.awt.image.BufferedImage;
@@ -32,10 +33,13 @@ public class ProcesareController {
 
     private final ProcesorDocumente procesor;
     private final AppConfig config;
+    private final AppRepository appRepository;
 
-    public ProcesareController(ProcesorDocumente procesor, AppConfig config) {
+
+    public ProcesareController(ProcesorDocumente procesor, AppConfig config, AppRepository appRepository) {
         this.procesor = procesor;
         this.config = config;
+        this.appRepository = appRepository;
     }
 
 
@@ -45,18 +49,14 @@ public class ProcesareController {
         List<String> response = new ArrayList<>();
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
-            File inputDir = new File(config.getInputFolder());
-            if (!inputDir.exists())  inputDir.mkdirs();
-            
-            File destFile = new File(inputDir, file.getOriginalFilename());
-            file.transferTo(destFile);
+            File destFile = appRepository.salveazaFisierIntrare(file);
             procesor.proceseazaLot(destFile);
+            response.add(destFile.getName().replace(".zip", ""));
+            response.add("S-a creat lotul " + destFile.getName().replace(".zip", ""));
             response.add("Fișier încărcat și procesat cu succes.");
-            response.add("ar trebui sa adauge " + procesor.getActRepository().getActiv() + " în listă");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
-            e.printStackTrace();
             response.add("Eroare la încărcarea fișierului.");
             return ResponseEntity.status(500).body(response);
         }
@@ -70,6 +70,7 @@ public class ProcesareController {
             if (!inputDir.exists())  inputDir.mkdirs();
             
             File destFile = new File(inputDir, file.getOriginalFilename());
+            System.out.println("Salvam fisierul in "+destFile.getAbsolutePath());
             file.transferTo(destFile);
             response.addAll(procesor.proceseazaDocumentScanat(destFile));
             response.add("Fișier încărcat și procesat cu succes.");
@@ -85,7 +86,7 @@ public class ProcesareController {
     @GetMapping("/liste-disponibile")
     public ResponseEntity<List<String>> getListeDisponibile() {
         try {
-            List<String> liste = procesor.getActRepository().getListeDisponibile();
+            List<String> liste = procesor.getAppRepository().getListeDisponibile();
             return ResponseEntity.ok(liste);
         } catch (Exception e) {
             System.out.println("Eroare la obținerea listelor disponibile: " + e.getMessage());
@@ -97,10 +98,10 @@ public class ProcesareController {
     @PostMapping("/set-activ")
     public ResponseEntity<List<String>> setActiv(@RequestParam("nume") String nume) {
         try {
-            if (procesor.getActRepository().setActiv(nume)) {
+            if (procesor.getAppRepository().setActiv(nume)) {
                 return ResponseEntity.ok(List.of("Lotul " + nume + " a fost setat ca activ."));
             } else {
-                return ResponseEntity.status(404).body(procesor.getActRepository().getListeDisponibile());
+                return ResponseEntity.status(404).body(procesor.getAppRepository().getListeDisponibile());
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body(List.of("Eroare: " + e.getMessage()));

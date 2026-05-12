@@ -7,7 +7,10 @@ export class LogService {
   // Semnalul centralizat pentru log-uri
   logs = signal<string[]>([]);
 
-  addLog(message: string) {
+  add(message: string) {
     this.logs.update(prev => [...prev, message]);
+  }
+  addLogs(messages: string[]) {
+    this.logs.update(prev => [...prev, ...messages]);
   }
 }
