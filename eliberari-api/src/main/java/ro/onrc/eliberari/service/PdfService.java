@@ -51,6 +51,19 @@ public class PdfService {
         }
     }
 
+    public File salveazaGrupPagini(PDDocument sursa, List<Integer> pagini, String outputFolder , String numeFisier) throws IOException {
+        File fisier;
+        try (PDDocument nou = new PDDocument()) {
+            for (int index : pagini) {
+                nou.addPage(sursa.getPage(index));
+            };
+            fisier=new File(outputFolder + numeFisier);
+            nou.save(fisier);
+            return fisier;
+        }
+    }
+
+
     public String extrageText(PDDocument doc, int paginaIndex) throws IOException {
         PDFTextStripper stripper = new PDFTextStripper();
         // PDFTextStripper folosește indexare de la 1 la n

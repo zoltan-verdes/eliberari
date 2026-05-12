@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,10 +37,11 @@ public class ProcesorDocumente {
     private final PdfService pdfService;
     private final ProcesorPagina procPagina;
     private final ZipService zipService;
-    private final ActRepository actRepository;
+    private final AppRepository actRepository;
 
     private LotCereri lotCereri = new LotCereri();
     public List<Act> listPagini = new ArrayList<>();
+    public String lotCurent = "";
 
     private BufferedImage cod_ci;
     private DocumentOptimizer docOptimezer;
@@ -47,7 +49,7 @@ public class ProcesorDocumente {
 
 
     // Spring injectează automat serviciile prin constructor
-    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, DocumentOptimizer documentOptimizer, ZipService zipService, ActRepository actRepository, PdfPrintService pdfPrintService) {
+    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, DocumentOptimizer documentOptimizer, ZipService zipService, AppRepository actRepository, PdfPrintService pdfPrintService) {
         this.procPagina = procPagina;
         this.pdfService = pdfService;
         this.docOptimezer = documentOptimizer;
@@ -61,7 +63,7 @@ public class ProcesorDocumente {
         return lotCereri;
     }
 
-    public ActRepository getActRepository() {
+    public AppRepository getActRepository() {
         return actRepository;
     }
 
@@ -81,7 +83,7 @@ public boolean[] verificamIgnorate(PDDocument doc) throws IOException {
 }
 
 
-public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
+public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
 
         List<String> log = new ArrayList<>();
 //        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
@@ -90,9 +92,17 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
 
             List<Integer> paginiCurente = new ArrayList<>();
 
-            int nrPagini = document.getNumberOfPages()-nrPaginiIgnorate;
+            File outputDir = new File(fisier.getAbsolutePath().replace(".pdf",""));
+            if (!outputDir.exists())  outputDir.mkdirs();
+            else try (var files = Files.list(outputDir.toPath())) {
+                files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
+            }            
+
+
+
+            int nrPagini = document.getNumberOfPages();
             System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
-            if (nrPagini != listPagini.size()){
+            if ((nrPagini-nrPaginiIgnorate) != listPagini.size()){
                 log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
                 System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
                 return log;
@@ -104,7 +114,7 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
                 if (listPagini.get(index)!=null)
                 try {
                     var imagine = pdfService.randeazaPagina(document, i, 150); 
-                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")  -  doc asteptat "+listPagini.get(i).getDenumire_fisier());
+                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")  -  doc asteptat "+listPagini.get(index).getDenumire_fisier());
                     int nrPaginiAct = listPagini.get(index).getNrPagini();
 
                     if (listPagini.get(index).getTipAct() == TipAct.CI) {;
@@ -121,7 +131,7 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
                     String denumireFisier = listPagini.get(index).getDenumire_fisier();
                     paginiCurente.add(i);
                     for (int j=1;j<nrPaginiAct;j++)
-                        paginiCurente.add(++i);
+                        {paginiCurente.add(++i);index++;}
 
                     System.out.println("Salvam: " + denumireFisier);
                     pdfService.salveazaGrupPagini(document, paginiCurente, denumireFisier);
@@ -136,7 +146,7 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
                 };
             }
 
-        return new ScanatDTO(null, log);
+        return log;//new ScanatDTO(null, log);
     }
         
     
@@ -148,13 +158,8 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
      * Grupează fișierele pe baza numărului găsit în nume și identifică tipul actului.
      */
     public List<Cerere> proceseazaLot(File fisier) throws IOException {
-
-
         if (fisier == null) return null;
-
-
         List<File> fisiere = zipService.dezarhiveaza(fisier);
-
 
         // 1. Sortăm lista după numărul extras din denumirea fișierului
         fisiere.sort((f1, f2) -> {
@@ -165,6 +170,7 @@ public ScanatDTO proceseazaDocumentScanat(File fisier) throws Exception {
 
         this.lotCereri = new LotCereri();
         this.listPagini = new ArrayList<>();
+        this.lotCurent = fisier.getName().replace(".zip", "");
         Cerere cerereCurenta = null;
         boolean file_lista_verificare = false;
 

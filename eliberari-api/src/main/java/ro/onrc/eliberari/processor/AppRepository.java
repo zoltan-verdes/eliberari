@@ -7,10 +7,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.Act;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class ActRepository {
+public class AppRepository {
 
     private final ObjectMapper objectMapper;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -27,7 +30,7 @@ public class ActRepository {
     private String activ = "";
     private List<String> listLoturi = new ArrayList<>();
 
-    public ActRepository(AppConfig appConfig) {
+    public AppRepository(AppConfig appConfig) {
         this.appConfig = appConfig;
         this.objectMapper = new ObjectMapper();
         // Înregistrăm modulul pentru a suporta Java 8 Date/Time dacă Act are astfel de câmpuri
@@ -44,6 +47,25 @@ public class ActRepository {
                     .collect(Collectors.toList());
         }
     }
+
+
+    public File salveazaFisierIntrare(MultipartFile file)    {
+        try {            
+            File inputDir = new File(appConfig.getOutputFolder());
+            if (!inputDir.exists())  inputDir.mkdirs();
+            else try (var files = Files.list(inputDir.toPath())) {
+                files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
+            }            
+            String timestamp = LocalDateTime.now().format(formatter);
+            File destFile = new File(inputDir, file.getOriginalFilename().replace(".zip", "")+"- "+timestamp+".zip");
+            file.transferTo(destFile);
+            return destFile;
+        } catch (Exception e) {
+            System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
+            return null;
+        }
+    }
+
 
     /**
      * Salvează o listă nouă de acte într-un fișier JSON.

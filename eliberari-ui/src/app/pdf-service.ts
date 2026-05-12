@@ -9,7 +9,9 @@ export class PdfService {
   doc = signal<File | null>(null);
   pageStatuses = signal<boolean[]>([]);
   rezultate = signal<any[]>([]);
+  denumireLot = signal<string | null>;
 
+  
   setFile(file: File | null) {
     this.doc.set(file);
   }
