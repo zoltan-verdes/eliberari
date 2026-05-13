@@ -17,7 +17,7 @@ public class AppConstants {
 
 // CONSTATATOR  
     public static final int CC_Y = 350;
-    public static final int CC_HEIGHT = 70;
+    public static final int CC_HEIGHT = 80;
     public static final int CC_X = 420;
     public static final int CC_WIDTH = 440;
 

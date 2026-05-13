@@ -9,5 +9,10 @@ export const routes: Routes = [
     {
         path:'scanat',
         loadComponent: () => import('./incarca-scanat/incarca-scanat').then(m => m.IncarcaScanat) 
+    },
+    {
+        path:'dovezi',
+        loadComponent: () => import('./dovezi-ridicare/dovezi-ridicare').then(m => m.DoveziRidicare) 
     }
+
 ];

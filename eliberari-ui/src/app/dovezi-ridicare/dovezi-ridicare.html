@@ -1,0 +1,46 @@
+<div class="main">
+  <!-- Popup pentru mesaj -->
+   @if (logs().length == 0) {
+    <div class="placeholder">Așteptare comandă...</div>
+  }
+  @if (mesaj()){
+  <div  class="popup">
+    {{ mesaj() }}
+  </div>
+  }
+
+  <div class="incarca">
+    <label class="custom-file-input">
+      <input type="file" accept=".zip" #fileInput (change)="onFisLotSelected($event)" />
+      <span class="file-icon">📁</span>
+      <span class="file-name">{{ selectedFisLot()?.name || 'Selecteaza fișier Lot' }}</span>
+    </label>
+    <button [disabled]="!selectedFisLot() || isUploading()" (click)="uploadLot()">
+      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP' }}
+    </button>
+  </div>
+
+  <div class="incarca">
+    <label class="custom-file-input">
+      <input type="file" accept=".pdf" #fileInput (change)="onFisScanSelected($event)" />
+      <span class="file-icon">📁</span>
+      <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
+    </label>
+    <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
+      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
+    </button>
+  </div>
+  
+
+  <div>
+    <button [disabled]="isProcessing()" (click)="tipareste()">
+      {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
+    </button>
+
+    <button (click)="aduImaginea()">' Adu Imaginea'</button>
+  </div>
+
+  <app-list-loturi></app-list-loturi>
+
+
+</div>

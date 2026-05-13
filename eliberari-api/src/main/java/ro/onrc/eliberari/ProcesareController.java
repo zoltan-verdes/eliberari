@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
+import ro.onrc.eliberari.model.CerereSimpla;
+import ro.onrc.eliberari.model.StivaCereri;
 import ro.onrc.eliberari.processor.AppRepository;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -62,7 +65,7 @@ public class ProcesareController {
         }
     }
     @PostMapping("/upload-scan")
-    public ResponseEntity<List<String>> uploadScan(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<?> uploadScan(@RequestParam("file") MultipartFile file) throws Exception {
         List<String> response = new ArrayList<>();
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
@@ -79,14 +82,15 @@ public class ProcesareController {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
             e.printStackTrace();
             response.add("Eroare la încărcarea fișierului."+e.getMessage());
-            return ResponseEntity.status(500).body(response);
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 
     @GetMapping("/liste-disponibile")
     public ResponseEntity<List<String>> getListeDisponibile() {
+        System.out.println("getListeDiponibile()");
         try {
-            List<String> liste = procesor.getAppRepository().getListeDisponibile();
+            List<String> liste = appRepository.getListeDisponibile();
             return ResponseEntity.ok(liste);
         } catch (Exception e) {
             System.out.println("Eroare la obținerea listelor disponibile: " + e.getMessage());
@@ -95,18 +99,25 @@ public class ProcesareController {
         }
     }
 
-    @PostMapping("/set-activ")
-    public ResponseEntity<List<String>> setActiv(@RequestParam("nume") String nume) {
-        try {
-            if (procesor.getAppRepository().setActiv(nume)) {
-                return ResponseEntity.ok(List.of("Lotul " + nume + " a fost setat ca activ."));
-            } else {
-                return ResponseEntity.status(404).body(procesor.getAppRepository().getListeDisponibile());
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(List.of("Eroare: " + e.getMessage()));
+
+@PostMapping("/set-activ")
+public ResponseEntity<?> setActiv(@RequestParam("nume") String numeLot) {
+    System.out.println("SetAcitv("+numeLot+")");
+    try {
+        if (this.appRepository.setActiv(numeLot)) {
+            // Returnăm direct lista de cereri, nu obiectul wrapper StivaCereri, 
+            // pentru a fi mai ușor de mapat în Angular.
+            List<CerereSimpla> lista = (new StivaCereri(appRepository.citesteLista(numeLot))).getLista();
+            return ResponseEntity.ok(lista);
+        } else {
+            // Trimitem doar 404, fără body. Angular va decide ce să facă.
+            return ResponseEntity.notFound().build();
         }
+    } catch (Exception e) {
+        // Pe eroare 500 trimitem un simplu String.
+        return ResponseEntity.status(500).body("Eroare la aducerea tabelului: " + e.getMessage());
     }
+}    
 
 }
 

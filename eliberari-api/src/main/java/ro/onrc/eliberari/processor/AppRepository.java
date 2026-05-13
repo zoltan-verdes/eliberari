@@ -89,6 +89,7 @@ public class AppRepository {
             System.out.println("Fișier salvat cu succes: " + fisierDestinatie.getAbsolutePath());
         } catch (IOException e) {
             // Probabil ar trebui să aruncăm o excepție personalizată aici
+            System.out.println("Eroare la salvarea listei: "+e.getMessage());
             e.printStackTrace();
         }
     }
@@ -105,6 +106,7 @@ public class AppRepository {
         }
 
         try {
+            System.out.println("AppRepository.citesteLista cu date");
             return objectMapper.readValue(fisier, new TypeReference<List<Act>>() {});
         } catch (IOException e) {
             System.err.println("Eroare la citirea fișierului JSON: " + e.getMessage());

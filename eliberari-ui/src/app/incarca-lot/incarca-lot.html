@@ -15,30 +15,11 @@
       <span class="file-icon">📁</span>
       <span class="file-name">{{ selectedFisLot()?.name || 'Selecteaza fișier Lot' }}</span>
     </label>
-    <button [disabled]="!selectedFisLot() || isUploading()" (click)="uploadLot()">
+    <button [disabled]="!selectedFisLot() || isUploading()" (click)="uploadFile()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP' }}
     </button>
   </div>
 
-  <div class="incarca">
-    <label class="custom-file-input">
-      <input type="file" accept=".pdf" #fileInput (change)="onFisScanSelected($event)" />
-      <span class="file-icon">📁</span>
-      <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
-    </label>
-    <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
-      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
-    </button>
-  </div>
-  
-
-  <div>
-    <button [disabled]="isProcessing()" (click)="tipareste()">
-      {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
-    </button>
-
-    <button (click)="aduImaginea()">' Adu Imaginea'</button>
-  </div>
 
   <app-list-loturi></app-list-loturi>
 

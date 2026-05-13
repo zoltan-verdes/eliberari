@@ -2,9 +2,11 @@ package ro.onrc.eliberari.processor;
 
 import ro.onrc.eliberari.LogListener;
 import ro.onrc.eliberari.model.Cerere;
+import ro.onrc.eliberari.model.CerereSimpla;
 import ro.onrc.eliberari.model.Act;
 import ro.onrc.eliberari.model.LotCereri;
 import ro.onrc.eliberari.model.ScanatDTO;
+import ro.onrc.eliberari.model.StivaCereri;
 import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.model.TipAct;
 import ro.onrc.eliberari.service.DocumentOptimizer;
@@ -106,8 +108,8 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
             int nrPagini = document.getNumberOfPages();
             System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
             if ((nrPagini-nrPaginiIgnorate) != listPagini.size()){
-                log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
-                System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + nrPagini + " vs " + listPagini.size());
+                log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
+                System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
                 return log;
             }
             int index = 0;
@@ -160,7 +162,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
      * Procesează o listă de fișiere primite (ex. după dezarhivare).
      * Grupează fișierele pe baza numărului găsit în nume și identifică tipul actului.
      */
-    public List<Cerere> proceseazaLot(File fisier) throws IOException {
+    public StivaCereri proceseazaLot(File fisier) throws IOException {
         if (fisier == null) return null;
         List<File> fisiere = zipService.dezarhiveaza(fisier);
         
@@ -171,17 +173,18 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
             return Long.compare(n1, n2);
         });
 
-        this.lotCereri = new LotCereri();
+        StivaCereri listCereri = new StivaCereri();
         this.listPagini = new ArrayList<>();
         this.lotCurent = fisier.getName().replace(".zip", "");
-        Cerere cerereCurenta = null;
+//        Cerere cerereCurenta = null;
         boolean file_lista_verificare = false;
 
         for (File f : fisiere) {
             String numeFisier = f.getName();
             System.out.print("Fisierul: " + numeFisier+" - ");
             long numarL = extrageNumarDinNume(numeFisier);
-            String numarS = String.valueOf(numarL);
+//            String numarS = String.valueOf(numarL);
+            String data = extrageDataDinNume(numeFisier);
             
             // Determinăm tipul actului pe baza numelui
             TipAct tip = determinaTipActDinNume(numeFisier);
@@ -201,21 +204,23 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                     file_lista_verificare = true;
                     continue; // Nu adăugăm lista de verificare ca act, ci o asociem cererii
                 }
-                Act act = new Act(numarL, tip, numeFisier, paginiInPdf);
-                
+                Act act = new Act(numarL, data, tip, numeFisier, paginiInPdf);
                 listPagini.add(act);
                 for(int i=1;i<paginiInPdf;i++){
                     listPagini.add(null);
                 }
+                listCereri.addAct(act);
+/*                
                 // Dacă este o cerere nouă, încercăm să extragem datele firmei din textul primului act
                 if (cerereCurenta == null || cerereCurenta.getNumar()!=numarL) {
                     if ((cerereCurenta!=null)&&(!file_lista_verificare)){
                         System.out.println("Cererea " + cerereCurenta.getNumar() + " nu are listă de verificare asociată!");
                     }
-                    cerereCurenta = new Cerere(numarS, "negasit", "negasit", "negasit");
+                    cerereCurenta = new Cerere(numarS, data, "negasit", "negasit");
                 }
                  cerereCurenta.addAct(tip, paginiInPdf);
                 lotCereri.adauga(cerereCurenta);    
+*/
             } catch (Exception e) {
                 System.out.println("Eroare la citirea fișierului: " + numeFisier);
             }
@@ -225,7 +230,7 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
         System.out.println("punem in actRepository: " + fisier.getName());
         appRepository.salveazaListaNoua(listPagini, fisier.getName().replace(".zip", ""));
 
-        return lotCereri.getToate();
+        return listCereri;
     }
 
 
@@ -248,6 +253,18 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
         }
         return 0;
     }
+    private String extrageDataDinNume(String nume) {
+        // REGEX: Caută prima secvență de cifre din nume (început, mijloc sau sfârșit)
+        // Exemplu: "123_act.pdf" sau "Incheiere_123.pdf" -> 123
+        Pattern p = Pattern.compile("\\d{2}_\\d+_(\\d{2}.\\d{2}.\\d{4})");
+        Matcher m = p.matcher(nume);
+        if (m.find()) {
+//            System.out.println("Am găsit data : " + m.group(1));
+            return m.group(1);
+        }
+        else return "";
+    }
+
 
     private TipAct determinaTipActDinNume(String nume) {
         

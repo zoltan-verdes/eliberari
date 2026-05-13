@@ -1,5 +1,6 @@
 import { Component, computed, Input, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { CerereItem } from '../../model';
 // import * as JSZip from 'jszip';
 
 @Component({
@@ -9,6 +10,19 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './rezultat.scss',
 })
 
+export class Rezultat {
+  @Input() date: CerereItem[] = []; // Folosim interfața pentru claritate
+
+  // Deoarece vrei să tratezi valorile ca stringuri simple în UI:
+  formatStatus(valoare: any): string {
+    if (valoare === 0 || valoare === null || valoare === undefined) {
+      return '-';
+    }
+    return valoare.toString();
+  }
+}
+
+/*
 export class Rezultat {
   @Input() date: any[] = [];
   rezultate = signal<any[]>([]);
@@ -24,7 +38,7 @@ export class Rezultat {
   }
 
 
-
+*/
 
 /*
 async selecteazaDocument(file: File, numeDocument: string) {
@@ -50,7 +64,7 @@ async selecteazaDocument(file: File, numeDocument: string) {
    // this.pdfSrc.set(documentUrl);
   }
 }  */
-}
+
 
 
 

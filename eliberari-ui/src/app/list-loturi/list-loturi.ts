@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Rezultat } from '../rezultat/rezultat';
 import { PdfService } from '../pdf.service';
+import { CerereItem } from '../../model';
 
 @Component({
   selector: 'app-list-loturi',
@@ -43,24 +44,30 @@ export class ListLoturi implements OnInit {
     });
   }
 
-  selecteazaLot(nume: string) {
-    console.log("Ang: selectam lotul: "+nume);
-    this.pdfService.denumireLot.set(nume);
+  
+selecteazaLot(numeLot: string) {
+  this.pdfService.denumireLot.set(numeLot);
 
-    this.http.post<string[][]>(`http://localhost:8080/api/ocr/set-activ?nume=${nume}`, {}).subscribe({
-      next: (response) => {
-        this.rezultate.set(response)
-        this.lotActiv.set(nume);
-      },
-      error: (err) => {
-        if (err.status === 404) {
-            alert('Lotul selectat nu a fost găsit. Te rugăm să selectezi unul din lista actualizată.');
-            this.incarcaListe()
-        } else {
-        console.error('Nu s-a putut seta lotul activ', err);}
+  this.http.post<CerereItem[]>(`http://localhost:8080/api/ocr/set-activ?nume=${numeLot}`, {}).subscribe({
+    next: (response) => {
+      // Deoarece în Spring am returnat direct List<CerereSimpla>,
+      // response este acum direct array-ul de care avem nevoie.
+      console.log("pas1: selectare activ");
+      this.rezultate.set(response);
+      console.log("pas2: selectare activ");
+      this.lotActiv.set(numeLot);
+      console.log("pas3: selectare activ");
+    },
+    error: (err) => {
+      if (err.status === 404) {
+        alert('Lotul nu a mai fost găsit. Lista se va actualiza.');
+        this.incarcaListe(); // Angular inițiază singur reîmprospătarea
+      } else {
+        console.error('Eroare severă:', err.error);
       }
-    });
-  }
+    }
+  });
+}
 
 
   rezultateCompletate = computed(() => {
@@ -80,3 +87,4 @@ export class ListLoturi implements OnInit {
   });  
   
 }
+

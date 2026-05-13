@@ -5,12 +5,12 @@ import { Rezultat } from '../rezultat/rezultat';
 import { LogService } from '../log.service';
 
 @Component({
-  selector: 'app-incarca-lot',
-  imports: [ListLoturi, Rezultat],
-  templateUrl: './incarca-lot.html',
-  styleUrl: './incarca-lot.scss',
+  selector: 'app-dovezi-ridicare',
+  imports: [ListLoturi],
+  templateUrl: './dovezi-ridicare.html',
+  styleUrl: './dovezi-ridicare.scss',
 })
-export class IncarcaLot {
+export class DoveziRidicare {
   private http = inject(HttpClient);
   private zone = inject(NgZone);
   private logService = inject(LogService);
@@ -67,15 +67,33 @@ export class IncarcaLot {
     }
   }
 
-  uploadFile() {
+  onFisScanSelected(event: any) {
+    const fisScan = event.target.files[0];
+    if (fisScan && fisScan.type === 'application/pdf') {
+      this.selectedFisScan.set(fisScan);
+    } else {
+      alert('Selectați un fișier pdf valid. Tip fisier selectat: '+fisScan.type);
+      this.selectedFisScan.set(null);
+    }
+  }
+
+  uploadLot() {
+    this.uploadFile(this.selectedFisLot, 'upload');
+  }
+
+  uploadScan() {
+    this.uploadFile(this.selectedFisScan, 'upload-scan');
+  }
+
+  uploadFile(fis: WritableSignal<File | null>, endpoint:string) {
     console.log('am intrat in upload');
-    const fis = this.selectedFisLot;
     if (!fis()) { 
         console.error('Semnalul nu este inițializat sau fișierul lipsește');
         return; 
     }
 
 // 1. Trimitem fișierul către semnalul ce va fi pasat componentei FIU
+    
     this.selectedPdfFile.set(fis());
 
     this.isUploading.set(true);
@@ -86,10 +104,10 @@ export class IncarcaLot {
        // Presupunând că serverul returnează numele fișierului creat sau putem folosi fis.name
   
 
-this.http.post<string[]>('http://localhost:8080/api/ocr/upload', formData).subscribe({
+this.http.post<string[]>('http://localhost:8080/api/ocr/' + endpoint, formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
-        this.logService.add('Fișier '+' încărcat: ' + fis()!.name);
+        this.logService.add('Fișier '+endpoint+' încărcat: ' + fis()!.name);
         this.logService.addLogs(response);
         const [primul, ...loguri] =response;
         if (loguri.length > 0) {

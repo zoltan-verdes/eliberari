@@ -1,9 +1,29 @@
-<nav>
+<nav class="main-menu">
   <ul>
-    <li routerLink="/">Incarca lot acte de eliberat- </li>
-    <li routerLink="/scanat">Incarca document scanat - </li>
-    <li> Semneaza si descarca lot</li>
-    <li> Separa si redenumeste incheieri</li>
-    <li> Separa si redenumeste Dovezi de ridicare</li>
+    <li class="menu-category">
+      <span class="category-title">Acte de eliberat ghiseu</span>
+      <ul>
+        <li routerLink="/" routerLinkActive="active">Tiparire lot</li>
+        <li routerLink="/scanat" routerLinkActive="active">Separare/redenumire</li>
+        <li>Semneaza si descarca lot</li>
+      </ul>
+    </li>
+
+    <li class="menu-category">
+      <span class="category-title">Incheieri</span>
+      <ul>
+        <li>Incarca lot</li>
+        <li>Separa si redenumeste</li>
+      </ul>
+    </li>
+
+    <li class="menu-category">
+      <span class="category-title">Separare OCRizat</span>
+      <ul>
+        <li>Incheieri</li>
+        <li routerLink="/dovezi" routerLinkActive="active">Dovezi de ridicare</li>
+        <li>Acte de ridicat (mixt)</li>
+      </ul>
+    </li>
   </ul>
 </nav>
