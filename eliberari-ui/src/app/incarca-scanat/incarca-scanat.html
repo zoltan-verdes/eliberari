@@ -18,13 +18,7 @@
     <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
     </button>
-  </div>
-  
-
-  <div>
-    <button [disabled]="isProcessing()" (click)="redenumeste()">
-      {{ isProcessing() ? 'Se procesează...' : '🚀 Pornește OCR' }}
-    </button>
+    <button (click)="afiseazaPdfLocal()">Previzualizare Rapidă</button>
   </div>
 
   <app-list-loturi></app-list-loturi>

@@ -1,12 +1,11 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, NgZone, signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, inject, NgZone, signal, ViewChild } from '@angular/core';
 import { ListLoturi } from './../list-loturi/list-loturi';
-import { Rezultat } from '../rezultat/rezultat';
 import { LogService } from '../log.service';
 
 @Component({
   selector: 'app-incarca-lot',
-  imports: [ListLoturi, Rezultat],
+  imports: [ListLoturi],
   templateUrl: './incarca-lot.html',
   styleUrl: './incarca-lot.scss',
 })

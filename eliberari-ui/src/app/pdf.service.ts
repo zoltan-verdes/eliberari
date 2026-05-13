@@ -10,9 +10,11 @@ export class PdfService {
   denumireLot = signal<string | "">("");
 
   
-  setFile(file: File | null) {
+setFile(file: File | null) {
+    console.log('PDF_SERVICE: setFile apelat cu:', file?.name);
     this.doc.set(file);
-  }
+    console.log('PDF_SERVICE: Signal "doc" a fost actualizat.');
+}
 
 
 handleStatusChange(newStatuses: boolean[]) {

@@ -78,9 +78,22 @@ this.http.post<boolean[]>('http://localhost:8080/api/ocr/upload-scan', formData)
     }
   });  }
 
-  redenumeste (){
-    ;
+  afiseazaPdfLocal() {
+  const fisier = this.selectedFisScan();
+  if (fisier) {
+    console.log('Trimit fișierul local către service pentru afișare:', fisier.name);
+    
+    // Resetăm statusurile la un array gol (pentru a fi inițializate de validator)
+    this.pdfService.pageStatuses.set([]);
+    
+    // Setăm fișierul în service - asta ar trebui să fie suficient
+    this.pdfService.setFile(fisier);
+    
+    this.logService.add('Previzualizare locală activată pentru: ' + fisier.name);
+  } else {
+    alert('Te rugăm să selectezi un fișier PDF mai întâi.');
   }
+}
 
 }
 
