@@ -48,21 +48,21 @@ export class IncarcaScanat {
     this.isUploading.set(true);
     const formData = new FormData();
     formData.append('file', fisier, this.pdfService.denumireLot()+'.pdf');
-
-this.http.post<DateCompletateDTO>('http://localhost:8080/api/ocr/upload-scan', formData).subscribe({
+        
+this.http.post<boolean[]>('http://localhost:8080/api/ocr/upload-scan', formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
         this.logService.add('Fișier încărcat: ' + fisier.name);
-        this.logService.addLogs(response.log);
+/*        this.logService.addLogs(response.log);
         const ultimul = response.log[response.log.length - 1];
         
         if (ultimul) {
           this.mesaj.set(ultimul);
           setTimeout(() => this.mesaj.set(null), 5000);
         } 
-
-        this.pdfService.setFile(fisier);
-        this.pdfService.pageStatuses.set(response.pagIgnorate);
+*/
+        this.pdfService.pageStatuses.set(response);
+      this.pdfService.setFile(fisier);
 
       this.isUploading.set(false);
       this.selectedFisScan.set(null);

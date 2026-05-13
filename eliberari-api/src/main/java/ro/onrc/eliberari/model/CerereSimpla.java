@@ -3,7 +3,7 @@ package ro.onrc.eliberari.model;
 public class CerereSimpla{
     private final long numar;
     private final String data;
-    private int ci =0, cim =0, cc= 0, pagTotal = 0, pagInceput = 0;
+    private int ci = 0, cim = 0, cc = 0, nrCC = 0, pagTotal = 0, pagInceput = 0;
 
     public CerereSimpla(String numar, String data) {
         this.numar = parseLongSafely(numar);
@@ -50,7 +50,7 @@ public class CerereSimpla{
         switch (tip) {
             case CI -> {ci = 1; pagTotal++;}
             case CIM -> {cim = 1; pagTotal++;}
-            case Constatator -> {cc+=nrPagini; pagTotal+=nrPagini;}
+            case Constatator -> {nrCC++;cc+=nrPagini; pagTotal+=nrPagini;}
             default -> {;}
         }
     }
@@ -60,7 +60,7 @@ public class CerereSimpla{
             switch (act.getTipAct()) {
                 case CI -> {nrPag = ci = 1; pagTotal++; }
                 case CIM -> {nrPag = cim = 1; pagTotal++;}
-                case Constatator -> {cc+=act.getNrPagini(); pagTotal+=act.getNrPagini();}
+                case Constatator -> {nrCC++;cc+=act.getNrPagini(); pagTotal+=act.getNrPagini();}
                 default -> {;}
             }
             return nrPag;
@@ -71,6 +71,13 @@ public class CerereSimpla{
         this.pagInceput =  pagInceput;
     }
 
+    public int getNrActe(){
+        return (ci+cim+nrCC);
+    }
+
+    public int getNrPagini(){
+        return pagTotal;
+    }
  
     private long parseLongSafely(String s) {
         if (s == null) return 0;

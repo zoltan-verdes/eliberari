@@ -12,11 +12,12 @@ import { PdfService } from '../pdf.service';
 })
 export class PdfValidatorComponent {
 
-
-
   private pdfService = inject(PdfService);
   fileInput = this.pdfService.doc;
   pageStatuses = this.pdfService.pageStatuses;
+
+  
+
 
   
   // Primim fișierul și starea paginilor de la părinte
@@ -33,6 +34,7 @@ export class PdfValidatorComponent {
   });
 
 
+
 //  pdfSrc = input.required<File | string | Uint8Array | null>();
  // pageStatuses = input.required<boolean[]>(); // true = păstrat, false = ignorat
   
@@ -41,10 +43,23 @@ export class PdfValidatorComponent {
 
   totalPages = signal<number>(0);
 
-  // Se execută când PDF-ul este încărcat cu succes de bibliotecă
-  onPdfLoaded(pdf: PDFDocumentProxy) {
-    this.totalPages.set(pdf.numPages);
+
+onPdfLoaded(pdf: PDFDocumentProxy) {
+  console.log('PDF interogat cu succes. Pagini:', pdf.numPages);
+  
+  // Update-ul semnalului trebuie să fie imediat
+  this.totalPages.set(pdf.numPages);
+
+  // IMPORTANT: Dacă din backend au venit deja statusurile (din incarca-scanat), 
+  // nu le suprascrie cu Array(fill.true). 
+  // Verificăm dacă lungimea curentă corespunde cu numărul de pagini.
+  if (this.pageStatuses().length !== pdf.numPages) {
+    console.log('Inițializare statusuri pagini implicit (toate true)');
+    this.pdfService.pageStatuses.set(new Array(pdf.numPages).fill(true));
   }
+}
+
+
 
   togglePage(index: number) {
     const updated = [...this.pageStatuses()];

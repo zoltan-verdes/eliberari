@@ -1,19 +1,26 @@
-<div class="list-loturi">
+<div class="lista-containter">
   <h3>Liste Disponibile</h3>
   @if (listeDisponibile().length > 0) {
-    <ul>
-      @for (lista of listeDisponibile(); track lista) {
-        <li 
-          (click) = "selecteazaLot(lista)"
-          [class.active] = "lista === lotActiv()"
-          style="cursor: pointer;">   
-          {{ lista }}
-        </li>
-      }
-    </ul>
+  <!-- Header-ul listei -->
+  <div class="lista-header">
+    <span>ID Lot</span>
+    <span>Cereri</span>
+    <span>Acte</span>
+    <span>Pagini</span>
+  </div>
+
+  @for (lista of listeDisponibile(); track lista) {
+  <div class="lista-rand" (click) = "selecteazaLot(lista[0])" [class.active] = "lista[0] === lotActiv()">
+    <span>{{ lista[0] }}</span>
+    <span>{{ lista[1] }}</span>
+    <span>{{ lista[2] }}</span>
+    <span>{{ lista[3] }}</span>
+  </div>
+  }
   } @else {
     <p>Nu există liste disponibile.</p>
   }
+
 </div>
 
 <app-rezultat [date]="rezultateCompletate()"></app-rezultat>

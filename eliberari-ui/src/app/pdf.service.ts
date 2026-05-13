@@ -1,11 +1,9 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, effect, Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfService {
-  // Semnalul centralizat pentru log-uri
-  
   doc = signal<File | null>(null);
   pageStatuses = signal<boolean[]>([]);
   rezultate = signal<any[]>([]);

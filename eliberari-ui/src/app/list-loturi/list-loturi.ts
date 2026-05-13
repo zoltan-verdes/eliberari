@@ -15,7 +15,7 @@ import { CerereItem } from '../../model';
 export class ListLoturi implements OnInit {
   private http = inject(HttpClient);
   private pdfService = inject(PdfService);
-  listeDisponibile = signal<string[]>([]);
+  listeDisponibile = signal<string[][]>([]);
   lotActiv = signal<string | null>(null);
   rezultate = signal<any[]>([]);
 
@@ -26,14 +26,14 @@ export class ListLoturi implements OnInit {
   }
 
   adauga(nou: string) {
-    this.listeDisponibile.update(liste => [...liste, nou]);
+    this.incarcaListe(nou);
     this.lotActiv.set(nou);
     this.lotSelectat.emit(nou);
     this.pdfService.denumireLot.set(nou);
   }
 
   incarcaListe(isSelected?: string) {
-    this.http.get<string[]>('http://localhost:8080/api/ocr/liste-disponibile').subscribe({
+    this.http.get<string[][]>('http://localhost:8080/api/ocr/liste-disponibile').subscribe({
       next: (liste) => {
         this.listeDisponibile.set(liste);
         if (isSelected) {
@@ -72,7 +72,7 @@ selecteazaLot(numeLot: string) {
 
   rezultateCompletate = computed(() => {
     const dateReale = this.rezultate();
-    const randuriGoaleNecesare = Math.max(0, 10 - dateReale.length);
+    const randuriGoaleNecesare = Math.max(0, 20 - dateReale.length);
 
     // Creăm un array cu restul de rânduri goale
     const goale = Array(randuriGoaleNecesare).fill({

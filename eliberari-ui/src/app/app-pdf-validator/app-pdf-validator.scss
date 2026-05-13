@@ -1,10 +1,14 @@
+.pdf-container{
+  border: 5px solid black;
+  min-height: 500px;
+  height: 500px;
+}
+
 .pdf-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid; // Schimbă din flex în grid pentru control mai bun
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 20px;
-  padding: 20px;
-  background: #f0f2f5;
-  border-radius: 8px;
+  min-height: 500px; /* Garantează un spațiu minim */
 }
 
 .page-item {
@@ -21,7 +25,12 @@
 .pdf-wrapper {
   position: relative;
   border: 1px solid #ddd;
+  width: 150px;
+  height: 200px; /* Trebuie să fie identic cu dimensiunea setată în [style] din HTML */
+  background-color: #eee; /* Placeholder vizual */
 }
+
+
 
 .ignored-overlay {
   position: absolute;

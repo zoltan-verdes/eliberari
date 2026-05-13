@@ -85,84 +85,13 @@ public boolean[] verificamIgnorate(PDDocument doc) throws IOException {
 }
 
 
-public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
-
-        List<String> log = new ArrayList<>();
-//        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
-        listPagini = appRepository.citesteLista(fisier.getName().replace(".pdf", ""));
-
-        try (PDDocument document = Loader.loadPDF(fisier)) {
-            boolean[] paginiIgnorate = verificamIgnorate(document);
-
-            List<Integer> paginiCurente = new ArrayList<>();
-
-            File outputDir = new File(fisier.getAbsolutePath().replace(".pdf","\\"));
-            System.out.println("Incercam sa creem folderul "+ outputDir.getAbsolutePath());
-            if (!outputDir.exists())  {outputDir.mkdirs();}
-            else try (var files = Files.list(outputDir.toPath())) {
-                files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
-            }            
-
-
-
-            int nrPagini = document.getNumberOfPages();
-            System.out.println("Avem un document cu " + document.getNumberOfPages() + " nrPagini");
-            if ((nrPagini-nrPaginiIgnorate) != listPagini.size()){
-                log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
-                System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
-                return log;
-            }
-            int index = 0;
-            for (int i = 0; i < nrPagini; i++) {
-               // verificam ca pagina scanata coresponde cu pagina din lista de pagini procesate anterior
-                if (paginiIgnorate[i]) continue;
-                if (listPagini.get(index)!=null)
-                try {
-                    var imagine = pdfService.randeazaPagina(document, i, 150); 
-                    System.out.println("procesam pagina " + i + " dimensiunea (" + imagine.getWidth() + ","+ imagine.getHeight() + ")  -  doc asteptat "+listPagini.get(index).getDenumire_fisier());
-                    int nrPaginiAct = listPagini.get(index).getNrPagini();
-
-                    if (listPagini.get(index).getTipAct() == TipAct.CI) {;
-                        // trebuie sa rotim pagina cu 90 grade pentru a citi corect codul CI
-                        imagine = ImageProcessor.rotate90(imagine);
-                    };
-                    
-                    if (!procPagina.isMarkerPresent(imagine, listPagini.get(index).getTipAct())) {
-                        log.add("Pagina " + i + " nu este "+listPagini.get(index).getTipAct());
-                        System.out.println("Pagina " + i + " nu este "+listPagini.get(index).getTipAct());
-//                        return log;
-                    }
-                    
-                    String denumireFisier = listPagini.get(index).getDenumire_fisier();
-                    paginiCurente.add(i);
-                    for (int j=1;j<nrPaginiAct;j++)
-                        {paginiCurente.add(++i);index++;}
-
-                    System.out.println("Salvam: " + denumireFisier);
-                    pdfService.salveazaGrupPagini(document, paginiCurente, outputDir.getAbsolutePath(), denumireFisier);
-                    paginiCurente.clear();
-
-                    } catch (IOException e) {
-                        // Aici gestionezi eroarea de PDF (logare sau marcare pagină ca eșuată)
-                        System.err.println("Eroare la pagina " + i + ": " + e.getMessage());
-                        log.add("Eroare la pagina " + i + ": ");
-                    }
-                    index++;
-                };
-            }
-
-        return log;//new ScanatDTO(null, log);
-    }
-        
-    
-
 
 
     /**
      * Procesează o listă de fișiere primite (ex. după dezarhivare).
      * Grupează fișierele pe baza numărului găsit în nume și identifică tipul actului.
      */
-    public StivaCereri proceseazaLot(File fisier) throws IOException {
+    public List<Act> proceseazaLot(File fisier) throws IOException {
         if (fisier == null) return null;
         List<File> fisiere = zipService.dezarhiveaza(fisier);
         
@@ -173,11 +102,9 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
             return Long.compare(n1, n2);
         });
 
-        StivaCereri listCereri = new StivaCereri();
         this.listPagini = new ArrayList<>();
         this.lotCurent = fisier.getName().replace(".zip", "");
 //        Cerere cerereCurenta = null;
-        boolean file_lista_verificare = false;
 
         for (File f : fisiere) {
             String numeFisier = f.getName();
@@ -201,36 +128,21 @@ public List<String> proceseazaDocumentScanat(File fisier) throws Exception {
                 System.out.println("trecut cu succes" );
 
                 if (tip == TipAct.ListaVerificare) {
-                    file_lista_verificare = true;
-                    continue; // Nu adăugăm lista de verificare ca act, ci o asociem cererii
+                    continue; // Nu adăugăm lista de verificare ca act
                 }
                 Act act = new Act(numarL, data, tip, numeFisier, paginiInPdf);
-                listPagini.add(act);
-                for(int i=1;i<paginiInPdf;i++){
+                listPagini.add(act); 
+                //daca actul are mai multe pagini introducem pagini null
+                for(int i=1;i<paginiInPdf;i++){  
                     listPagini.add(null);
                 }
-                listCereri.addAct(act);
-/*                
-                // Dacă este o cerere nouă, încercăm să extragem datele firmei din textul primului act
-                if (cerereCurenta == null || cerereCurenta.getNumar()!=numarL) {
-                    if ((cerereCurenta!=null)&&(!file_lista_verificare)){
-                        System.out.println("Cererea " + cerereCurenta.getNumar() + " nu are listă de verificare asociată!");
-                    }
-                    cerereCurenta = new Cerere(numarS, data, "negasit", "negasit");
-                }
-                 cerereCurenta.addAct(tip, paginiInPdf);
-                lotCereri.adauga(cerereCurenta);    
-*/
             } catch (Exception e) {
                 System.out.println("Eroare la citirea fișierului: " + numeFisier);
             }
-
-
         }
         System.out.println("punem in actRepository: " + fisier.getName());
-        appRepository.salveazaListaNoua(listPagini, fisier.getName().replace(".zip", ""));
 
-        return listCereri;
+        return listPagini;
     }
 
 

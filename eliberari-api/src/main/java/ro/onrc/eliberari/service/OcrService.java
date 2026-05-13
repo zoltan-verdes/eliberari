@@ -36,11 +36,10 @@ public class OcrService {
         
         
         try {
-            File fisier = new File("D:\\DEV\\"+(index++)+"-ocr_test"+x+".png");
+            File fisier = new File("D:\\DEV\\"+"-ocr_test"+x+".png");
             ImageIO.write(zona, "png", fisier);
-//            String text = tesseract.doOCR(zona);
-              String text = tesseract.doOCR(fisier);
-            System.out.println("Text extras ("+index+"): " + text);
+            String text = tesseract.doOCR(zona);
+//              String text = tesseract.doOCR(fisier);
             return text;
         } catch (Exception e) {
             System.err.println("Eroare OCR: " + e.getMessage());

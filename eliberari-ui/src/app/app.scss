@@ -14,8 +14,10 @@ header{
 .zona_de_lucru{
     flex: 1; // Aceasta forțează zona de conținut să ocupe restul ecranului
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     background-color: #f9f9f9;
+    max-width: 900px;
+
 }
 app-pdf-validator {
     flex: 1; // Ocupă cealaltă cotă egală din spațiul rămas

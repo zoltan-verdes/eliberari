@@ -17,6 +17,9 @@ import ro.onrc.eliberari.model.CerereSimpla;
 import ro.onrc.eliberari.model.StivaCereri;
 import ro.onrc.eliberari.processor.AppRepository;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
+import ro.onrc.eliberari.processor.ProcesorScanat;
+import ro.onrc.eliberari.service.LotRegistry;
+
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -37,12 +40,18 @@ public class ProcesareController {
     private final ProcesorDocumente procesor;
     private final AppConfig config;
     private final AppRepository appRepository;
+    private final LotRegistry lotRegistry;
+    private final ProcesorScanat procesorScanat;
 
 
-    public ProcesareController(ProcesorDocumente procesor, AppConfig config, AppRepository appRepository) {
+
+
+    public ProcesareController(ProcesorDocumente procesor, AppConfig config, AppRepository appRepository, LotRegistry lotRegistry, ProcesorScanat procesorScanat) {
         this.procesor = procesor;
         this.config = config;
         this.appRepository = appRepository;
+        this.lotRegistry = lotRegistry;
+        this.procesorScanat = procesorScanat;
     }
 
 
@@ -53,7 +62,7 @@ public class ProcesareController {
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
             File destFile = appRepository.salveazaFisierIntrare(file);
-            procesor.proceseazaLot(destFile);
+            lotRegistry.registerNewLot(destFile);
             response.add(destFile.getName().replace(".zip", ""));
             response.add("S-a creat lotul " + destFile.getName().replace(".zip", ""));
             response.add("Fișier încărcat și procesat cu succes.");
@@ -66,7 +75,7 @@ public class ProcesareController {
     }
     @PostMapping("/upload-scan")
     public ResponseEntity<?> uploadScan(@RequestParam("file") MultipartFile file) throws Exception {
-        List<String> response = new ArrayList<>();
+        boolean[] response;
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
             File inputDir = new File(config.getOutputFolder());
@@ -75,22 +84,20 @@ public class ProcesareController {
             File destFile = new File(inputDir, file.getOriginalFilename());
             System.out.println("Salvam fisierul in "+destFile.getAbsolutePath());
             file.transferTo(destFile);
-            response.addAll(procesor.proceseazaDocumentScanat(destFile));
-            response.add("Fișier încărcat și procesat cu succes.");
+            response = procesorScanat.proceseazaDocumentScanat(destFile);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
             e.printStackTrace();
-            response.add("Eroare la încărcarea fișierului."+e.getMessage());
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 
     @GetMapping("/liste-disponibile")
-    public ResponseEntity<List<String>> getListeDisponibile() {
+    public ResponseEntity<List<String[]>> getListeDisponibile() {
         System.out.println("getListeDiponibile()");
         try {
-            List<String> liste = appRepository.getListeDisponibile();
+            List<String[]> liste = lotRegistry.getListaLoturiExtins();
             return ResponseEntity.ok(liste);
         } catch (Exception e) {
             System.out.println("Eroare la obținerea listelor disponibile: " + e.getMessage());
@@ -104,10 +111,10 @@ public class ProcesareController {
 public ResponseEntity<?> setActiv(@RequestParam("nume") String numeLot) {
     System.out.println("SetAcitv("+numeLot+")");
     try {
-        if (this.appRepository.setActiv(numeLot)) {
+        if (this.lotRegistry.exists(numeLot)) {
             // Returnăm direct lista de cereri, nu obiectul wrapper StivaCereri, 
             // pentru a fi mai ușor de mapat în Angular.
-            List<CerereSimpla> lista = (new StivaCereri(appRepository.citesteLista(numeLot))).getLista();
+            List<CerereSimpla> lista = lotRegistry.getLotForUI(numeLot);
             return ResponseEntity.ok(lista);
         } else {
             // Trimitem doar 404, fără body. Angular va decide ce să facă.
