@@ -4,6 +4,6 @@ export interface CerereItem {
   ci: number;
   cim: number;
   cc: number;
-  paginiTotal?: number;
-  paginaInceput?: number;
+  paginiTotal: number;
+  paginaInceput: number;
 }

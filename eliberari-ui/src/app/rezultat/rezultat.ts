@@ -1,6 +1,7 @@
-import { Component, computed, Input, signal } from '@angular/core';
+import { Component, computed, inject, Input, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CerereItem } from '../../model';
+import { PdfService } from '../pdf.service';
 // import * as JSZip from 'jszip';
 
 @Component({
@@ -11,61 +12,21 @@ import { CerereItem } from '../../model';
 })
 
 export class Rezultat {
-  @Input() date: CerereItem[] = []; // Folosim interfața pentru claritate
+  @Input() date: CerereItem[] = []; 
+  private pdfService = inject(PdfService);
 
-  // Deoarece vrei să tratezi valorile ca stringuri simple în UI:
-  formatStatus(valoare: any): string {
-    if (valoare === 0 || valoare === null || valoare === undefined) {
-      return '-';
-    }
-    return valoare.toString();
-  }
+
+mergiLaPagina(paginaPropusa: number) {
+  this.pdfService.sariLaPagina(paginaPropusa);
+    
 }
 
-/*
-export class Rezultat {
-  @Input() date: any[] = [];
-  rezultate = signal<any[]>([]);
-//  zipOriginal: JSZip | null = null;
-  private curentUrl: string | null = null;
-
-  formatStatus(status: any): string {
-    if (!status || (status.ci === 0)) return ' - ';
-    if (!status || (status.cim === 0)) return '-';
-    if (!status || (status.cc === 0)) return '-';
-
-    return `${status.nrPagLot} / ${status.nrPagScanat}`;
+  formatStatus(valoare: any): string {
+    if (valoare === 0 || valoare === null || valoare === undefined) return '-';
+    return valoare.toString();
   }
 
-
-*/
-
-/*
-async selecteazaDocument(file: File, numeDocument: string) {
-  const jszip = new JSZip();
-  this.zipOriginal = await jszip.loadAsync(file);
-// Eliberăm URL-ul vechi dacă există
-  if (this.curentUrl) {
-    URL.revokeObjectURL(this.curentUrl);
-  }
-
-  if (!this.zipOriginal) return;
-
-  const fileEntry = this.zipOriginal.file(numeDocument);
-  
-  if (fileEntry) {
-    // Extragerea propriu-zisă are loc DOAR ACUM
-    const blob = await fileEntry.async("blob");
-    
-    // Creăm URL-ul pentru afișare
-    const documentUrl = URL.createObjectURL(blob);
-    
-    // Transmiți documentUrl către semnalul sau variabila folosită de <pdf-viewer>
-   // this.pdfSrc.set(documentUrl);
-  }
-}  */
-
-
+}
 
 
 /*

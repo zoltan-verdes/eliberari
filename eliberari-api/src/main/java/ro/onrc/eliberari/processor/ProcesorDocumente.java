@@ -122,9 +122,9 @@ public boolean[] verificamIgnorate(PDDocument doc) throws IOException {
                 if (tip == TipAct.CIM || tip == TipAct.CI ) paginiInPdf = 1; 
                 System.out.print("tiparim " + numeFisier+" " );
 
-//                if (tip != TipAct.CI)
-//                    if (tip == TipAct.Constatator) pdfPrintService.printeazaCuFoxit(f,2);
-//                else pdfPrintService.printeazaCuFoxit(f,1);
+                if (tip != TipAct.CI)
+                    if (tip == TipAct.Constatator) pdfPrintService.printeazaCuFoxit(f,2);
+                else pdfPrintService.printeazaCuFoxit(f,1);
                 System.out.println("trecut cu succes" );
 
                 if (tip == TipAct.ListaVerificare) {

@@ -61,8 +61,8 @@ this.http.post<boolean[]>('http://localhost:8080/api/ocr/upload-scan', formData)
           setTimeout(() => this.mesaj.set(null), 5000);
         } 
 */
-        this.pdfService.pageStatuses.set(response);
       this.pdfService.setFile(fisier);
+      this.pdfService.pageStatuses.set(response);
 
       this.isUploading.set(false);
       this.selectedFisScan.set(null);

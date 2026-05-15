@@ -8,13 +8,22 @@ export class PdfService {
   pageStatuses = signal<boolean[]>([]);
   rezultate = signal<any[]>([]);
   denumireLot = signal<string | "">("");
-
   
-setFile(file: File | null) {
-    console.log('PDF_SERVICE: setFile apelat cu:', file?.name);
+
+paginaCurenta = signal<number>(1); 
+
+  setFile(file: File | null) {
+        console.log('PDF_SERVICE: setFile apelat cu:', file?.name);
     this.doc.set(file);
-    console.log('PDF_SERVICE: Signal "doc" a fost actualizat.');
-}
+    this.paginaCurenta.set(1); // Resetăm la prima pagină când schimbăm fișierul
+        console.log('PDF_SERVICE: Signal "doc" a fost actualizat.');
+    
+  }
+  
+  // Metodă pentru a schimba pagina
+  sariLaPagina(nr: number) {
+    this.paginaCurenta.set(this.paginiValideMap()[nr-1]+1);
+  }
 
 
 handleStatusChange(newStatuses: boolean[]) {
@@ -35,6 +44,18 @@ togglePageStatus(index: number) {
 updateStatusesFromChild(newStatuses: boolean[]) {
   this.pageStatuses.set(newStatuses);
 }
+
+public paginiValideMap = computed<number[]>(() => {
+  const statusuri = this.pageStatuses();
+  const harta: number[] = [];
+
+  statusuri.forEach((isIgnored, index) => {
+    if (!isIgnored) {
+      harta.push(index);
+    }
+  });
+  return harta;
+});
 
 // În uploadFile, după ce primești răspunsul:
 // this.apiPageStatuses.set(response.someArrayOfBooleans);

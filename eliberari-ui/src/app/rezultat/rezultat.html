@@ -7,16 +7,18 @@
         <th>CI</th>
         <th>CIM</th>
         <th>CC</th>
+        <th>Pag</th>
       </tr>
     </thead>
     <tbody>
       @for (item of date; track $index) {
-        <tr>
-          <td>{{ item.numar || '' }}</td>
+        <tr >
+          <td (click)="mergiLaPagina(item.paginaInceput)" >{{ item.numar || '' }}</td>
           <td>{{ item.data || '' }}</td>
-          <td class="pagini">{{ formatStatus(item.ci) }}</td>
-          <td class="pagini">{{ formatStatus(item.cim) }}</td>
-          <td class="pagini">{{ formatStatus(item.cc) }}</td>
+          <td class="pagini" (click)="mergiLaPagina(item.paginaInceput)" >{{ formatStatus(item.ci) }}</td>
+          <td class="pagini" (click)="mergiLaPagina(item.paginaInceput+item.ci)" >{{ formatStatus(item.cim) }}</td>
+          <td class="pagini" (click)="mergiLaPagina(item.paginaInceput+item.ci+item.cim)" >{{ formatStatus(item.cc) }}</td>
+          <td class="pagini">{{ item.paginaInceput }}</td>
         </tr>
       }
     </tbody>

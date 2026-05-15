@@ -17,7 +17,7 @@ public class StivaCereri {
 
     public void addCerere(CerereSimpla cerere){
         if (cerere==null) return;
-        cerere.setPagInceput(numarPagini);
+        cerere.setPagInceput(numarPagini+1);
         lista.add(cerere);
         numarPagini += cerere.getNrPagTotal();
         nr_acte += cerere.getNrActe();
@@ -32,7 +32,7 @@ public class StivaCereri {
             numarPagini += act.getNrPagini();
         }else
         {
-            lista.add(new CerereSimpla(act, numarPagini));
+            lista.add(new CerereSimpla(act, numarPagini+1));
             numarPagini += lista.getLast().getNrPagTotal();
         }
     }

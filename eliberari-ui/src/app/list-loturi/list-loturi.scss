@@ -6,6 +6,7 @@
   background-color: #f9f9f9;
   margin-top: 10px;
   margin-bottom: 30px;
+  height: 100%;
 }
 
 .lista-header, .lista-rand {
@@ -29,6 +30,6 @@
 }
 
 .lista-rand:hover {
-  background-color: #eef;; /* Highlight pe tot rândul la hover */
+  background-color: #dee5ec; /* Highlight pe tot rândul la hover */
   cursor: pointer;
 }

@@ -1,9 +1,13 @@
 .pdf-container {
-  width: 100%;
+//  flex: 1;           // Aceasta forțează div-ul să se extindă până jos
+  display: flex;
+  flex-direction: column;
+//  width: 100%;
+  height: 100%;
   background-color: #525659; // Culoarea clasică de fundal PDF viewer
-  border-radius: 4px;
+//  border-radius: 4px;
   overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  position: relative;
 }
 
 .empty-state {
@@ -15,5 +19,45 @@
 }
 
 pdf-viewer {
-  margin: 0 auto;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden;
+
+::ng-deep {
+    .ng2-pdf-viewer-container {
+      width: auto !important;
+      height: 100% !important;
+      display: flex;
+      flex-direction: column; // Pentru show-all=true, paginile se succed vertical
+    }
+
+    // Stilul nativ al paginilor
+    .page {
+      position: relative !important; // Ca să putem ancora elemente dacă e cazul
+
+      // CLASA NOUĂ pe care o activăm din Angular pentru paginile cu status true:
+      &.pagina-anulata {
+        &::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          // Desenăm o linie roșie perfect oblică de la colțul stânga-sus la dreapta-jos
+          background: linear-gradient(to bottom right, transparent calc(50% - 3px), red calc(50% - 3px), red calc(50% + 3px), transparent calc(50% + 3px));
+          pointer-events: none; // Să nu blocheze selecția de text sau click-urile
+          z-index: 10; // Să stea clar deasupra foii randerate
+          opacity: 0.6; // Opacitate ca să se vadă textul din spate
+        }
+      }
+    }
+  }
+
+
 }
+
+

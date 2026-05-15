@@ -2,12 +2,19 @@
   @if (localPdfSrc()) {
     <pdf-viewer
       [src]="localPdfSrc()!"
+      [page]="paginaDeAfisat()"
+      (pageChange)="pdfService.paginaCurenta.set($event)"
       [render-text]="false"
       [original-size]="false"
       [show-all]="true"
-      [fit-to-page]="true"
-      style="width: 100%; height: 800px; display: block;"
+      [autoresize]="false"
+      [zoom]="1"
+      [zoom-scale]="'page-height'"
+      (page-rendered)="onPageRendered($event)"
     ></pdf-viewer>
+    <div style="text-align: center; color: white; padding: 5px;">
+       Pagina curentă: {{ paginaDeAfisat() }}
+    </div>
   } @else {
     <div class="empty-state">
       <p>Selectați un document pentru previzualizare.</p>

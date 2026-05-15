@@ -1,6 +1,6 @@
 .results-container {
   padding: 5px;
-  max-height: 600px; // Probabil 10 rânduri x 40px per rând
+  max-height: 400px; // Probabil 10 rânduri x 40px per rând
   overflow-y: auto;  // Activează scroll-ul vertical
  
 
@@ -22,13 +22,14 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      cursor: pointer;
     }
 
     th {
       position: sticky;
       top: 0;
       z-index: 0;
-      background-color: lightgoldenrodyellow;
+      background-color: #dee5ec;
  
       border-top: 1px solid black;
       font-weight: bold;
