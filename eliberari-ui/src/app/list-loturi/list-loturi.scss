@@ -33,3 +33,13 @@
   background-color: #dee5ec; /* Highlight pe tot rândul la hover */
   cursor: pointer;
 }
+
+  button {
+    padding: 5px;
+    background: #8c99a8;
+    color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    &:disabled { background: #ccc; }
+  }

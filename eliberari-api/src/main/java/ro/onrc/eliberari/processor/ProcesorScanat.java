@@ -43,16 +43,35 @@ public class ProcesorScanat {
         return paginiIgnorate;
     }
 
-
     public boolean[] proceseazaDocumentScanat(File fisier) throws Exception {
-
-        List<String> log = new ArrayList<>();
-//        File fisier_optimizat = docOptimezer.eliminaGoale(fisier);
         listPagini = registry.getLotForProcessing(fisier.getName().replace(".pdf", ""));
         boolean paginiIgnorate[] = new boolean[listPagini.size()];
 
         try (PDDocument document = Loader.loadPDF(fisier)) {
             paginiIgnorate = verificamIgnorate(document);
+        } catch (IOException e) {
+            System.err.println("Eroare la citirea fișierului: " + e.getMessage());
+            
+            return paginiIgnorate;
+        }
+        return paginiIgnorate;
+    };
+        
+
+
+    public String desparteFisierScanat(String numeLot) throws Exception {
+
+        List<String> log = new ArrayList<>();
+        listPagini = registry.getLotForProcessing(numeLot);
+        boolean paginiIgnorate[] = registry.getPageStatuses(numeLot);
+        nrPaginiIgnorate = 0;
+        for (int i = 0; i < paginiIgnorate.length; i++) {
+            if (paginiIgnorate[i]) nrPaginiIgnorate++;
+        }        
+        File fisier = registry.getFisierScanat(numeLot);
+
+
+        try (PDDocument document = Loader.loadPDF(fisier)) {
 
             List<Integer> paginiCurente = new ArrayList<>();
 
@@ -68,7 +87,7 @@ public class ProcesorScanat {
             if ((nrPagini-nrPaginiIgnorate) != listPagini.size()){
                 log.add("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
                 System.out.println("Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size());
-                return paginiIgnorate;
+                return "Numărul de pagini din document nu corespunde cu numărul de pagini procesate anterior! " + (nrPagini-nrPaginiIgnorate) + " vs " + listPagini.size();
             }
             int index = 0;
             for (int i = 0; i < nrPagini; i++) {
@@ -97,7 +116,8 @@ public class ProcesorScanat {
                         {paginiCurente.add(++i);index++;}
 
                     System.out.println("Salvam: " + denumireFisier);
-                    pdfService.salveazaGrupPagini(document, paginiCurente, outputDir.getAbsolutePath(), denumireFisier);
+                    File f = pdfService.salveazaGrupPagini(document, paginiCurente, outputDir.getAbsolutePath(), denumireFisier);
+                    registry.addFisierRezultat(numeLot, f);
                     paginiCurente.clear();
 
                     } catch (IOException e) {
@@ -110,7 +130,7 @@ public class ProcesorScanat {
             }
 
 //        return log;//new ScanatDTO(null, log);
-          return paginiIgnorate;
+          return "Separare terminat cu scces";
         
     }
 

@@ -1,9 +1,12 @@
 package ro.onrc.eliberari.model;
 
+import java.io.File;
+
 public class InfoLot {
     private int nrCereri;
     private int nrActe;
     private int nrPagini;
+    private File fisierScanat;
 
 
     public InfoLot(int nrCereri,int nrActe, int nrPagini) {
@@ -21,5 +24,9 @@ public class InfoLot {
     public int getNrPagini() {
         return nrPagini;
     }
+
+    public File getFisierScanat() { return fisierScanat; }
+
+    public void setFisierScanat(File fisier) {this.fisierScanat = fisier;}
 
 }

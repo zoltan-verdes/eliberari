@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -78,12 +79,7 @@ public class ProcesareController {
         boolean[] response;
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
-            File inputDir = new File(config.getOutputFolder());
-            if (!inputDir.exists())  inputDir.mkdirs();
-            
-            File destFile = new File(inputDir, file.getOriginalFilename());
-            System.out.println("Salvam fisierul in "+destFile.getAbsolutePath());
-            file.transferTo(destFile);
+            File destFile = lotRegistry.setFisierScanat(file);
             response = procesorScanat.proceseazaDocumentScanat(destFile);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -92,6 +88,28 @@ public class ProcesareController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
+
+    @PostMapping("/desparte")
+    public ResponseEntity<String> desparte(@RequestBody DesparteRequest request) {
+        System.out.println("Solicitare despartire pentru lotul: " + request.numeLot());
+        try {
+            File inputDir = new File(config.getOutputFolder());
+            File fisier = new File(inputDir, request.numeLot() + ".pdf");
+            
+            if (!fisier.exists()) {
+                return ResponseEntity.status(404).body("Fișierul scanat nu a fost găsit pe server.");
+            }
+
+            lotRegistry.savePageStatuses(request.numeLot(), request.statusChanged());
+            String mesaj = procesorScanat.desparteFisierScanat(request.numeLot());
+            
+            return ResponseEntity.ok().body(mesaj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Eroare la procesarea separării: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping("/liste-disponibile")
     public ResponseEntity<List<String[]>> getListeDisponibile() {
@@ -128,21 +146,4 @@ public ResponseEntity<?> setActiv(@RequestParam("nume") String numeLot) {
 
 }
 
-
-/*
-     Cod vechi pentru a transmite o imagine
-
-    @GetMapping(value = "/stream-image", produces = "text/event-stream;charset=UTF-8")
-    public SseEmitter streamImage() throws IOException {
-        SseEmitter emitter = new SseEmitter();
-        BufferedImage img = procesor.getCodCI();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(img, "png", baos);
-        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
-
-        emitter.send(SseEmitter.event().name("image-data").data(base64Image));
-
-        return emitter;
-    }
-*/
+record DesparteRequest(String numeLot, boolean[] statusChanged) {}    

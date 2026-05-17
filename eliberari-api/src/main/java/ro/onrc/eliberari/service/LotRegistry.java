@@ -3,12 +3,14 @@ package ro.onrc.eliberari.service;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import ro.onrc.eliberari.model.Act;
 import ro.onrc.eliberari.model.Cerere;
@@ -24,7 +26,10 @@ public class LotRegistry {
     ProcesorDocumente procesor;
     private final Map<String, List<Act>> internalStorage = new ConcurrentHashMap<>();
     private final Map<String, List<CerereSimpla>> viewStorage = new ConcurrentHashMap<>();
+    private final Map<String, boolean[]> pageStatuses = new ConcurrentHashMap<>();
+    private final Map<String, List<File>> fisiereRezultate = new ConcurrentHashMap<>();
     private final Map<String, InfoLot> infoLot = new ConcurrentHashMap<>();
+
 
 public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
         this.repository = repository;
@@ -63,21 +68,29 @@ public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
         repository.salveazaListaNoua(internal, lotId);        
     }
 
-    public boolean exists(String lotId){
-        return internalStorage.containsKey(lotId);
+    public boolean exists(String lotId){ return internalStorage.containsKey(lotId);     }
+
+    public List<String> getListaLoturi() { return internalStorage.keySet().stream().toList(); }
+
+    public List<CerereSimpla> getLotForUI(String lotId) { return viewStorage.get(lotId); }
+
+    public List<Act> getLotForProcessing(String lotId) { return internalStorage.get(lotId); }
+
+    public void savePageStatuses(String lotId, boolean[] statuses) { pageStatuses.put(lotId, statuses); }
+
+    public boolean[] getPageStatuses(String lotId) { return pageStatuses.get(lotId); }
+
+    public File getFisierScanat(String lotId) { return infoLot.get(lotId).getFisierScanat(); }
+
+    public File setFisierScanat(MultipartFile fisier) { 
+        String lotId = fisier.getOriginalFilename().replace(".pdf", "");
+        System.out.println("setam fisierul scant pentru lotul: "+lotId);
+        File file = repository.salveazaFisierScanat(fisier);
+        infoLot.get(lotId).setFisierScanat(file); 
+        return file;
     }
 
-    public List<String> getListaLoturi() {
-        return internalStorage.keySet().stream().toList();
-    }
 
-    public List<CerereSimpla> getLotForUI(String lotId) {
-        return viewStorage.get(lotId);
-    }
-
-    public List<Act> getLotForProcessing(String lotId) {
-        return internalStorage.get(lotId);
-    }
 
     public List<String[]> getListaLoturiExtins(){
         return infoLot.entrySet().stream()
@@ -89,4 +102,17 @@ public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
     })
     .collect(Collectors.toList());
     }
+
+    public void addFisierRezultat(String lotId, File fisier) {
+        List<File> fisiere = fisiereRezultate.get(lotId);
+        if (fisiere == null) {
+            fisiere = new ArrayList<>();
+        }
+        fisiere.add(fisier);
+        fisiereRezultate.put(lotId, fisiere);
+    }
+
+
+    
+
 }

@@ -1,0 +1,11 @@
+# Dependinte
+node_modules/
+
+# Cache si Build Angular
+.angular/
+dist/
+
+# IDE-uri si log-uri
+.vscode/
+.idea/
+*.log

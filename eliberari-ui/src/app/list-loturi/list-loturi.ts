@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Rezultat } from '../rezultat/rezultat';
 import { PdfService } from '../pdf.service';
 import { CerereItem } from '../../model';
+import { NotificationService } from '../notification.service';
 
 @Component({
   selector: 'app-list-loturi',
@@ -18,8 +19,12 @@ export class ListLoturi implements OnInit {
   listeDisponibile = signal<string[][]>([]);
   lotActiv = signal<string | null>(null);
   rezultate = signal<any[]>([]);
+  isSplitting = signal(false);
+
 
   @Output() lotSelectat = new EventEmitter<string>();
+
+  private notif = inject(NotificationService);
 
   ngOnInit() {
     this.incarcaListe();
@@ -52,11 +57,8 @@ selecteazaLot(numeLot: string) {
     next: (response) => {
       // Deoarece în Spring am returnat direct List<CerereSimpla>,
       // response este acum direct array-ul de care avem nevoie.
-      console.log("pas1: selectare activ");
       this.rezultate.set(response);
-      console.log("pas2: selectare activ");
       this.lotActiv.set(numeLot);
-      console.log("pas3: selectare activ");
     },
     error: (err) => {
       if (err.status === 404) {
@@ -68,6 +70,35 @@ selecteazaLot(numeLot: string) {
     }
   });
 }
+
+separaPdfScanat() {
+  const numeLot = this.pdfService.denumireLot();
+
+  const payload = {
+    numeLot: numeLot,
+    statusChanged: this.pdfService.pageStatuses() // Presupunând că este un Signal care conține array-ul de booleeni
+  };
+
+    this.http.post(`http://localhost:8080/api/ocr/desparte`, payload, { responseType: 'text' } ).subscribe({
+      next: (response) => {
+        if (response === 'Separare terminat cu scces') {
+          console.log('Separare finalizată:', response);
+          this.notif.afiseaza(response, 'success');
+        }
+        else this.notif.afiseaza(response, 'error');
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          this.notif.afiseaza('Lotul nu a mai fost găsit. Lista se va actualiza.','error');
+          this.incarcaListe(); // Angular inițiază singur reîmprospătarea
+        } else {
+          console.error('Eroare severă:', err.error);
+          this.notif.afiseaza(err.error, 'error');
+        }
+      }
+    });
+  }
+
 
 
   rezultateCompletate = computed(() => {
@@ -87,4 +118,3 @@ selecteazaLot(numeLot: string) {
   });  
   
 }
-

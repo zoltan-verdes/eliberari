@@ -30,19 +30,19 @@ public class AppRepository {
 
     private final ObjectMapper objectMapper;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    private final AppConfig appConfig;
+    private final AppConfig config;
     private String activ = "";
     private List<String> listLoturi = new ArrayList<>();
     
 
-    public AppRepository(AppConfig appConfig) {
-        this.appConfig = appConfig;
+    public AppRepository(AppConfig config) {
+        this.config = config;
         this.objectMapper = new ObjectMapper();
         // Înregistrăm modulul pentru a suporta Java 8 Date/Time dacă Act are astfel de câmpuri
         this.objectMapper.registerModule(new JavaTimeModule());
 
 
-       File folder = new File(appConfig.getLotFolder());
+       File folder = new File(config.getLotFolder());
         File[] fisiere = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
 
         if (fisiere != null) {
@@ -56,7 +56,7 @@ public class AppRepository {
 
     public File salveazaFisierIntrare(MultipartFile file)    {
         try {            
-            File inputDir = new File(appConfig.getInputFolder());
+            File inputDir = new File(config.getInputFolder());
             if (!inputDir.exists())  inputDir.mkdirs();
             else try (var files = Files.list(inputDir.toPath())) {
                 files.filter(Files::isRegularFile).forEach(p -> p.toFile().delete());
@@ -80,7 +80,7 @@ public class AppRepository {
 //        String timestamp = LocalDateTime.now().format(formatter);
 //        String numeFinal = denumireFisier + " - " + timestamp;
         
-        File folder = new File(appConfig.getLotFolder());
+        File folder = new File(config.getLotFolder());
         if (!folder.exists()) {
             folder.mkdirs(); // Creăm folderul dacă nu există
         }
@@ -99,12 +99,28 @@ public class AppRepository {
         }
     }
 
+
+    public File salveazaFisierScanat(MultipartFile file){
+            try {
+            File inputDir = new File(config.getOutputFolder());
+            if (!inputDir.exists())  inputDir.mkdirs();
+            
+            File destFile = new File(inputDir, file.getOriginalFilename());
+            System.out.println("Salvam fisierul in "+destFile.getAbsolutePath());
+            file.transferTo(destFile);
+            return destFile;
+            } catch (IOException e) {
+                System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
+                return null;
+            }
+    }
+
     /**
      * Citește conținutul unui fișier JSON specificat și returnează lista de acte.
      */
     public List<Act> citesteLista(String numeLot) {
         String numeFisier = numeLot + ".json";
-        File fisier = new File(appConfig.getLotFolder(), numeFisier);
+        File fisier = new File(config.getLotFolder(), numeFisier);
         if (!fisier.exists()) {
             System.err.println("Fișierul JSON nu a fost găsit: " + fisier.getAbsolutePath());
             return new ArrayList<>();

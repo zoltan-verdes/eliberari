@@ -38,3 +38,29 @@ app-pdf-validator {
 //    height: 100%;
     width: 100%;
 }
+
+.toast-popup {
+  position: fixed;
+  top: 20px; // Poziționat sus, la fel ca în aplicațiile moderne
+  right: 40px;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  z-index: 9999; // Ne asigurăm că stă absolut peste orice (inclusiv pdf-viewer)
+  font-weight: bold;
+  font-family: sans-serif;
+  
+  // Culori în funcție de rezultatul request-ului
+  &.success { background-color: #298a5d; } // Verde pentru ok
+  &.error   { background-color: #f8756c; } // Roșu pentru erori de server
+  &.info    { background-color: #7aa0bf; } // Albastru pentru încărcare/procesare
+
+  // O animație fină de fade-in
+  animation: toastFade 0.3s ease-out;
+}
+
+@keyframes toastFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

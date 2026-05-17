@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Jurnal } from './jurnal/jurnal';
@@ -6,7 +6,7 @@ import { SafeResourceUrl } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { Nav } from './nav/nav';
 import { PdfValidatorComponent } from "./app-pdf-validator/app-pdf-validator";
-
+import { NotificationService } from './notification.service';
 
 
 @Component({
@@ -17,5 +17,5 @@ import { PdfValidatorComponent } from "./app-pdf-validator/app-pdf-validator";
   styleUrl: './app.scss',
 })
 export class App {
-
+  public notifService = inject(NotificationService);
 }
