@@ -11,31 +11,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.CerereSimpla;
-import ro.onrc.eliberari.model.StivaCereri;
 import ro.onrc.eliberari.processor.AppRepository;
 import ro.onrc.eliberari.processor.ProcesorDocumente;
 import ro.onrc.eliberari.processor.ProcesorScanat;
 import ro.onrc.eliberari.service.LotRegistry;
 
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 
-import javax.imageio.ImageIO;
 
 @RestController
 @RequestMapping("/api/ocr")
-@CrossOrigin(origins = "http://localhost:4200", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+/*@CrossOrigin(
+    originPatterns = "http://192.168.*", 
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS}
+)*/
 public class ProcesareController {
 
     private final ProcesorDocumente procesor;

@@ -1,13 +1,7 @@
 package ro.onrc.eliberari.processor;
 
-import ro.onrc.eliberari.LogListener;
-import ro.onrc.eliberari.model.Cerere;
-import ro.onrc.eliberari.model.CerereSimpla;
 import ro.onrc.eliberari.model.Act;
 import ro.onrc.eliberari.model.LotCereri;
-import ro.onrc.eliberari.model.ScanatDTO;
-import ro.onrc.eliberari.model.StivaCereri;
-import ro.onrc.eliberari.model.InfoPagina;
 import ro.onrc.eliberari.model.TipAct;
 import ro.onrc.eliberari.service.DocumentOptimizer;
 import ro.onrc.eliberari.service.PdfPrintService;
@@ -22,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -44,17 +37,14 @@ public class ProcesorDocumente {
     private LotCereri lotCereri = new LotCereri();
     public List<Act> listPagini = new ArrayList<>();
     public String lotCurent = "";
-
-    private BufferedImage cod_ci;
-    private DocumentOptimizer docOptimezer;
     private int nrPaginiIgnorate = 0;
+    private BufferedImage cod_ci;
 
 
     // Spring injectează automat serviciile prin constructor
-    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, DocumentOptimizer documentOptimizer, ZipService zipService, AppRepository actRepository, PdfPrintService pdfPrintService) {
+    public ProcesorDocumente(ProcesorPagina procPagina, PdfService pdfService, ZipService zipService, AppRepository actRepository, PdfPrintService pdfPrintService) {
         this.procPagina = procPagina;
         this.pdfService = pdfService;
-        this.docOptimezer = documentOptimizer;
         this.zipService = zipService;
         this.appRepository = actRepository;
         this.pdfPrintService = pdfPrintService;

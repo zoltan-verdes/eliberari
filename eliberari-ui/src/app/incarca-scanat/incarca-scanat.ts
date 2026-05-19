@@ -3,6 +3,7 @@ import { Component, computed, inject, NgZone, signal, ViewChild, WritableSignal 
 import { ListLoturi } from './../list-loturi/list-loturi';
 import { LogService } from '../log.service';
 import { PdfService } from '../pdf.service';
+import { NotificationService } from '../notification.service';
 
 @Component({
   selector: 'app-incarca-lot',
@@ -15,11 +16,14 @@ export class IncarcaScanat {
   private zone = inject(NgZone);
   private logService = inject(LogService);
   private pdfService = inject(PdfService);
+  private notif = inject(NotificationService);
+
   logs = this.logService.logs;
   isProcessing = signal(false);
   selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
   mesaj = signal<string | null>(null);
+  isSplitting = signal(false);
   // Adaugă noi semnale pentru starea PDF-ului
   
 
@@ -49,7 +53,7 @@ export class IncarcaScanat {
     const formData = new FormData();
     formData.append('file', fisier, this.pdfService.denumireLot()+'.pdf');
         
-this.http.post<boolean[]>('http://localhost:8080/api/ocr/upload-scan', formData).subscribe({
+this.http.post<boolean[]>('/api/ocr/upload-scan', formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
         this.logService.add('Fișier încărcat: ' + fisier.name);
@@ -94,6 +98,38 @@ this.http.post<boolean[]>('http://localhost:8080/api/ocr/upload-scan', formData)
     alert('Te rugăm să selectezi un fișier PDF mai întâi.');
   }
 }
+
+
+separaPdfScanat() {
+  this.isSplitting.set(true);
+  const numeLot = this.pdfService.denumireLot();
+
+  const payload = {
+    numeLot: numeLot,
+    statusChanged: this.pdfService.pageStatuses() // Presupunând că este un Signal care conține array-ul de booleeni
+  };
+
+    this.http.post(`/api/ocr/desparte`, payload, { responseType: 'text' } ).subscribe({
+      next: (response) => {
+        if (response === 'Separare terminat cu scces') {
+          console.log('Separare finalizată:', response);
+          this.notif.afiseaza(response, 'success');
+        }
+        else this.notif.afiseaza(response, 'error');
+        this.isSplitting.set(false);        
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          this.notif.afiseaza('Lotul nu a mai fost găsit. Lista se va actualiza.','error');
+          this.listLoturiComp.incarcaListe(); // Angular inițiază singur reîmprospătarea
+        } else {
+          console.error('Eroare severă:', err.error);
+          this.notif.afiseaza(err.error, 'error');
+        }
+        this.isSplitting.set(false);
+      }
+    });
+  }
 
 }
 

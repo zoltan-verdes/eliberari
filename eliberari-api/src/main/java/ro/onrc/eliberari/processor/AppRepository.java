@@ -6,10 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.Act;
-import ro.onrc.eliberari.model.InfoLot;
-import ro.onrc.eliberari.model.StivaCereri;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository

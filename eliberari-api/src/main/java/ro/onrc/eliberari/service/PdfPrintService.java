@@ -7,6 +7,7 @@ import org.apache.pdfbox.printing.PDFPrintable;
 import org.apache.pdfbox.printing.Scaling;
 import org.springframework.stereotype.Service;
 
+import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.config.AppConstants;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -24,21 +25,24 @@ import java.util.concurrent.TimeUnit;
 
 
 @Service
-public class PdfPrintService implements InitializingBean {
+public class PdfPrintService{
 
     private PrintService cachedPrinter;
+    private AppConfig config;
 
-    @Override
-    public void afterPropertiesSet() {
+    public PdfPrintService(AppConfig config) {
+        this.config = config;
+        
         this.cachedPrinter = Arrays.stream(PrintServiceLookup.lookupPrintServices(null, null))
                 .filter(service -> service.getName().equalsIgnoreCase(AppConstants.TARGET_PRINTER))
                 .findFirst()
                 .orElse(null);
 
-        if (cachedPrinter == null) {
+        if (this.cachedPrinter == null) {
             System.err.println("Atenție: Imprimanta '%s' nu a fost găsită.".formatted(AppConstants.TARGET_PRINTER));
         }
     }
+
 
 
 public void printeazaFoxIt(File pdfFile, int numarCopii) throws IOException, InterruptedException {
@@ -74,14 +78,15 @@ public void printeazaFoxIt(File pdfFile, int numarCopii) throws IOException, Int
 
 
 public void printeazaCuFoxit(File pdfFile, int numarCopii) throws IOException, InterruptedException {
-    String foxitPath = "C:\\Program Files (x86)\\Foxit Software\\Foxit PDF Reader\\FoxitPDFReader.exe";
+  //  String foxitPath = "C:\\Program Files (x86)\\Foxit Software\\Foxit PDF Reader\\FoxitPDFReader.exe";
+  String foxitPath = config.getFoxitPath();
     
     // Transmitem calea absoluta direct executabilului
     String command = String.format("\"%s\" /t \"%s\" \"%s\"", 
                         foxitPath, 
                         pdfFile.getAbsolutePath(), 
                         AppConstants.TARGET_PRINTER);
-    
+    System.out.println("Executam comanda "+command);
     for (int i = 0; i < numarCopii; i++) {
         Runtime.getRuntime().exec(command).waitFor(); // Așteptăm 1 secundă între comenzi pentru a evita suprasolicitarea
         Thread.sleep(2000);

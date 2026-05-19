@@ -16,15 +16,17 @@ import { NotificationService } from '../notification.service';
 export class ListLoturi implements OnInit {
   private http = inject(HttpClient);
   private pdfService = inject(PdfService);
+  private notif = inject(NotificationService);
+  
   listeDisponibile = signal<string[][]>([]);
   lotActiv = signal<string | null>(null);
   rezultate = signal<any[]>([]);
-  isSplitting = signal(false);
+  
 
 
   @Output() lotSelectat = new EventEmitter<string>();
 
-  private notif = inject(NotificationService);
+  
 
   ngOnInit() {
     this.incarcaListe();
@@ -38,7 +40,7 @@ export class ListLoturi implements OnInit {
   }
 
   incarcaListe(isSelected?: string) {
-    this.http.get<string[][]>('http://localhost:8080/api/ocr/liste-disponibile').subscribe({
+    this.http.get<string[][]>('/api/ocr/liste-disponibile').subscribe({
       next: (liste) => {
         this.listeDisponibile.set(liste);
         if (isSelected) {
@@ -53,7 +55,7 @@ export class ListLoturi implements OnInit {
 selecteazaLot(numeLot: string) {
   this.pdfService.denumireLot.set(numeLot);
 
-  this.http.post<CerereItem[]>(`http://localhost:8080/api/ocr/set-activ?nume=${numeLot}`, {}).subscribe({
+  this.http.post<CerereItem[]>(`/api/ocr/set-activ?nume=${numeLot}`, {}).subscribe({
     next: (response) => {
       // Deoarece în Spring am returnat direct List<CerereSimpla>,
       // response este acum direct array-ul de care avem nevoie.
@@ -71,33 +73,7 @@ selecteazaLot(numeLot: string) {
   });
 }
 
-separaPdfScanat() {
-  const numeLot = this.pdfService.denumireLot();
 
-  const payload = {
-    numeLot: numeLot,
-    statusChanged: this.pdfService.pageStatuses() // Presupunând că este un Signal care conține array-ul de booleeni
-  };
-
-    this.http.post(`http://localhost:8080/api/ocr/desparte`, payload, { responseType: 'text' } ).subscribe({
-      next: (response) => {
-        if (response === 'Separare terminat cu scces') {
-          console.log('Separare finalizată:', response);
-          this.notif.afiseaza(response, 'success');
-        }
-        else this.notif.afiseaza(response, 'error');
-      },
-      error: (err) => {
-        if (err.status === 404) {
-          this.notif.afiseaza('Lotul nu a mai fost găsit. Lista se va actualiza.','error');
-          this.incarcaListe(); // Angular inițiază singur reîmprospătarea
-        } else {
-          console.error('Eroare severă:', err.error);
-          this.notif.afiseaza(err.error, 'error');
-        }
-      }
-    });
-  }
 
 
 

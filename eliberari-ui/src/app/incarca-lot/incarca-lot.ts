@@ -32,7 +32,7 @@ export class IncarcaLot {
   imagineCodBare = signal<string | null>(null);
 
   aduImaginea() {
-    const eventSource = new EventSource('http://localhost:8080/api/ocr/stream-image');
+    const eventSource = new EventSource('/api/ocr/stream-image');
 
     eventSource.addEventListener('image-data', (event: any) => {
       this.zone.run(() => {
@@ -85,7 +85,7 @@ export class IncarcaLot {
        // Presupunând că serverul returnează numele fișierului creat sau putem folosi fis.name
   
 
-this.http.post<string[]>('http://localhost:8080/api/ocr/upload', formData).subscribe({
+this.http.post<string[]>('/api/ocr/upload', formData).subscribe({
     next: (response) => {
         console.log('File uploaded:', response);
         this.logService.add('Fișier '+' încărcat: ' + fis()!.name);

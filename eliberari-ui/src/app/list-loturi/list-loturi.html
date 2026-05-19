@@ -22,9 +22,5 @@
     <p>Nu există liste disponibile.</p>
   }
 </div>
-  <div style="justify-content: flex-end; display: flex">
-    <button [disabled]="isSplitting()" (click)="separaPdfScanat()">
-      {{ isSplitting() ? 'Se separă...' : '📤 Separă pdf scanat' }}
-    </button>
-  </div>
+
 <app-rezultat [date]="rezultateCompletate()"></app-rezultat>

@@ -22,5 +22,10 @@
   </div>
 
   <app-list-loturi></app-list-loturi>
+  <div style="justify-content: flex-end; display: flex">
+    <button [disabled]="isSplitting()" (click)="separaPdfScanat()">
+      {{ isSplitting() ? 'Se separă...' : '📤 Separă pdf scanat' }}
+    </button>
+  </div>  
 
 </div>

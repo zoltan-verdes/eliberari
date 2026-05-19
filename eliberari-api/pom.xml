@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>ro.onrc</groupId>
 	<artifactId>eliberari-api</artifactId>
-	<version>0.2</version>
+	<version>0.5a</version>
 	<name>Eliberari Api</name>
 	<description />
 	<url />
