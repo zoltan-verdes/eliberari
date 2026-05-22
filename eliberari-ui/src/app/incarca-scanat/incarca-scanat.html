@@ -1,14 +1,12 @@
 <div class="main">
-  <!-- Popup pentru mesaj -->
-   @if (logs().length == 0) {
-    <div class="placeholder">Așteptare comandă...</div>
-  }
-  @if (mesaj()){
-  <div  class="popup">
-    {{ mesaj() }}
-  </div>
-  }
-
+  <span><b> Separare si redenumire document director scanat</b></span>
+  Se selecteaza intai lotul din Liste disponibile (incarcat anterior din zip).<br>
+  Dupa incarcare, va aparea pdf-ul in previzualizare partea drepta a ecranului.<br>
+  Cand se selecteaza un lot, sub el avem continutul detaliat cereri si actele pe care le contine
+  Se poate da click pe fiecare act in parte si va sari la pagina corespunzatoarea din pdf
+  Sistemul va marca ca ignorate paginile albe din varianta scanata (linie obliga  rosie pe pagina), dar recunoasterea nu este 100%.
+  Aici intervine verificarea. Trebuie sa verificati daca actul din lista sare la pagina scanata corespunzatoare, in special ultimele
+  Daca nu, trebuie verificata mai sus daca nu cumva sunt marcaje de ignorare gresite. Cu click se marcheaza/demarcheaza o pagina de la ignorare
   <div class="incarca">
     <label class="custom-file-input">
       <input type="file" accept=".pdf" #fileInput (change)="onFisScanSelected($event)" />
@@ -18,7 +16,6 @@
     <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
       {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
     </button>
-    <button (click)="afiseazaPdfLocal()">Previzualizare Rapidă</button>
   </div>
 
   <app-list-loturi></app-list-loturi>

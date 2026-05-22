@@ -130,7 +130,7 @@ public class ProcesorScanat {
             }
 
 //        return log;//new ScanatDTO(null, log);
-          return "Separare terminat cu scces";
+          return "Separare terminat cu succes";
         
     }
 

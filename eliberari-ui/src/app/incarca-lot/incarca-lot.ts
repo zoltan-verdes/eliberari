@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject, NgZone, signal, ViewChild } from '@angular/core';
 import { ListLoturi } from './../list-loturi/list-loturi';
 import { LogService } from '../log.service';
+import { NotificationService } from '../notification.service';
 
 @Component({
   selector: 'app-incarca-lot',
@@ -15,11 +16,12 @@ export class IncarcaLot {
   private logService = inject(LogService);
   logs = this.logService.logs;
   isProcessing = signal(false);
+  private notif = inject(NotificationService);
 
   selectedFisLot = signal<File | null>(null);
   selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
-  mesaj = signal<string | null>(null);
+  //mesaj = signal<string | null>(null);
   // Adaugă noi semnale pentru starea PDF-ului
   selectedPdfFile = signal<File | null>(null);
   
@@ -92,8 +94,9 @@ this.http.post<string[]>('/api/ocr/upload', formData).subscribe({
         this.logService.addLogs(response);
         const [primul, ...loguri] =response;
         if (loguri.length > 0) {
-          this.mesaj.set(loguri[loguri.length - 1]);
-          setTimeout(() => this.mesaj.set(null), 5000);
+          this.notif.afiseaza(loguri[loguri.length - 1],'success');
+//          this.mesaj.set(loguri[loguri.length - 1]);
+//          setTimeout(() => this.mesaj.set(null), 5000);
         } 
        this.listLoturiComp.adauga(primul);
 

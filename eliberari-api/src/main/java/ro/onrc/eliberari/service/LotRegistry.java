@@ -93,6 +93,7 @@ public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
 
 
     public List<String[]> getListaLoturiExtins(){
+        System.out.println("getListaLoturi "+infoLot.size()+" numar de inregistrari");
         return infoLot.entrySet().stream()
         .map(entry -> new String[] {
         entry.getKey(),                            // Identificatorul (String)

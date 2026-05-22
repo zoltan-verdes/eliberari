@@ -111,7 +111,7 @@ separaPdfScanat() {
 
     this.http.post(`/api/ocr/desparte`, payload, { responseType: 'text' } ).subscribe({
       next: (response) => {
-        if (response === 'Separare terminat cu scces') {
+        if (response === 'Separare terminat cu succes') {
           console.log('Separare finalizată:', response);
           this.notif.afiseaza(response, 'success');
         }
