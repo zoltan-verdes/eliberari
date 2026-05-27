@@ -1,7 +1,12 @@
+:host{
+  display: flex; flex-direction: column; flex:1; min-height: 0;
+}
+
 .results-container {
-  padding: 5px;
-  max-height: 400px; // Probabil 10 rânduri x 40px per rând
   overflow-y: auto;  // Activează scroll-ul vertical
+  flex: 1;
+  min-height: 0;
+  border: 1px solid grey;
  
 
 .tabel-cereri {
@@ -14,13 +19,13 @@
 
    
     th, td {
-      padding: 5 px;
+      padding: 2px;
       padding-left: 15px;
       border: 1px solid black;
       text-align: left;
-      height: 20px; // Înălțime fixă pentru a calcula corect cele 10 rânduri
+//      height: 20px; // Înălțime fixă
       white-space: nowrap;
-      overflow: hidden;
+//      overflow: hidden;
       text-overflow: ellipsis;
       cursor: pointer;
     }
@@ -28,7 +33,7 @@
     th {
       position: sticky;
       top: 0;
-      z-index: 0;
+      z-index: 1;
       background-color: #dee5ec;
  
       border-top: 1px solid black;

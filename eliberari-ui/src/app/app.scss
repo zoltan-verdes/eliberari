@@ -15,9 +15,9 @@ header{
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    min-height: calc(100vh - 80px); // Ajustează în funcție de înălțimea header-ului
-//    height: calc(100vh - 80px);
-//    max-height: calc(100vh - 60px);
+//    min-height: calc(100vh - 70px); // Ajustează în funcție de înălțimea header-ului
+    height: calc(100vh - 70px);
+//    max-height: calc(100vh - 70px);
 }
 
 .zona_de_lucru{
@@ -28,9 +28,7 @@ header{
     max-width: 800px;
     min-width: 800px;
     width: 800px;
-//    height: 100%;
-//    min-height: 100%;
-
+    flex: 1;
 }
 app-pdf-validator {
 //    flex: 1; // Ocupă cealaltă cotă egală din spațiul rămas

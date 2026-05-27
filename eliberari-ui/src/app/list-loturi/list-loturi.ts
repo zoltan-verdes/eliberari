@@ -79,7 +79,7 @@ selecteazaLot(numeLot: string) {
 
   rezultateCompletate = computed(() => {
     const dateReale = this.rezultate();
-    const randuriGoaleNecesare = Math.max(0, 20 - dateReale.length);
+    const randuriGoaleNecesare = Math.max(0, 30 - dateReale.length);
 
     // Creăm un array cu restul de rânduri goale
     const goale = Array(randuriGoaleNecesare).fill({

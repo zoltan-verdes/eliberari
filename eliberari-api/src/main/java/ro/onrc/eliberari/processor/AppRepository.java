@@ -39,8 +39,11 @@ public class AppRepository {
        File folder = new File(config.getLotFolder());
         File[] fisiere = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
 
+        long limitaDouaZile = System.currentTimeMillis() - (3L * 24 * 60 * 60 * 1000);
         if (fisiere != null) {
             listLoturi = Arrays.stream(fisiere)
+                    .filter(f -> f.lastModified() >= limitaDouaZile)
+                    .sorted((f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()))
                     .map(File::getName)
                     .map(name -> name.replace(".json", ""))
                     .collect(Collectors.toList());
