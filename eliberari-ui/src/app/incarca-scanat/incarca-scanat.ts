@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, NgZone, signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, computed, inject, NgZone, signal, viewChild, ViewChild, WritableSignal } from '@angular/core';
 import { ListLoturi } from './../list-loturi/list-loturi';
 import { LogService } from '../log.service';
 import { PdfService } from '../pdf.service';
@@ -25,15 +25,18 @@ export class IncarcaScanat {
   mesaj = signal<string | null>(null);
   isSplitting = signal(false);
   // Adaugă noi semnale pentru starea PDF-ului
-  
+  selectedFisLot = signal<File | null>(null);
+  denumireLot = signal<string | null>(null);
 
-  @ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
+  listLoturiComp = viewChild(ListLoturi);
+  selectedLot = computed(() => this.listLoturiComp()?.lotActiv());
 
 
   onFisScanSelected(event: any) {
     const fisScan = event.target.files[0];
     if (fisScan && fisScan.type === 'application/pdf') {
       this.selectedFisScan.set(fisScan);
+      this.uploadScan();
     } else {
       alert('Selectați un fișier pdf valid. Tip fisier selectat: '+fisScan.type);
       this.selectedFisScan.set(null);
@@ -42,6 +45,8 @@ export class IncarcaScanat {
   
   uploadScan() {
    console.log('am intrat in upload');
+   this.pdfService.setFile(null);
+   this.denumireLot.set(null);
     if (!this.selectedFisScan()) { 
         console.error('Semnalul nu este inițializat sau fișierul lipsește');
         return; 
@@ -67,6 +72,7 @@ this.http.post<boolean[]>('/api/ocr/upload-scan', formData).subscribe({
 */
       this.pdfService.setFile(fisier);
       this.pdfService.pageStatuses.set(response);
+      this.denumireLot.set(this.pdfService.denumireLot());
 
       this.isUploading.set(false);
       this.selectedFisScan.set(null);
@@ -121,7 +127,7 @@ separaPdfScanat() {
       error: (err) => {
         if (err.status === 404) {
           this.notif.afiseaza('Lotul nu a mai fost găsit. Lista se va actualiza.','error');
-          this.listLoturiComp.incarcaListe(); // Angular inițiază singur reîmprospătarea
+          this.listLoturiComp()?.incarcaListe(); // Angular inițiază singur reîmprospătarea
         } else {
           console.error('Eroare severă:', err.error);
           this.notif.afiseaza(err.error, 'error');

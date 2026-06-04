@@ -69,7 +69,8 @@
               "buildTarget": "eliberari-ui:build:production"
             },
             "development": {
-              "buildTarget": "eliberari-ui:build:development"
+              "buildTarget": "eliberari-ui:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

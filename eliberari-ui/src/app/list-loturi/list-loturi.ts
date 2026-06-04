@@ -53,14 +53,15 @@ export class ListLoturi implements OnInit {
 
   
 selecteazaLot(numeLot: string) {
-  this.pdfService.denumireLot.set(numeLot);
-
+  
   this.http.post<CerereItem[]>(`/api/ocr/set-activ?nume=${numeLot}`, {}).subscribe({
     next: (response) => {
       // Deoarece în Spring am returnat direct List<CerereSimpla>,
       // response este acum direct array-ul de care avem nevoie.
       this.rezultate.set(response);
       this.lotActiv.set(numeLot);
+      console.log('Lot selectat:', this.lotActiv());
+      this.pdfService.denumireLot.set(numeLot);
     },
     error: (err) => {
       if (err.status === 404) {

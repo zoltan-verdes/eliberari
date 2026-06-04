@@ -43,15 +43,21 @@ public class PdfPrintService{
         }
     }
 
+public void printeaza(File pdfFile, int nrExemplare) throws IOException, InterruptedException {
+    if (!pdfFile.exists()) {
+        throw new IOException("Fișierul PDF nu a fost găsit la calea: " + pdfFile.getAbsolutePath());
+    }
+    printeazaCuFoxit(pdfFile, nrExemplare);
+}
 
 
-public void printeazaFoxIt(File pdfFile, int numarCopii) throws IOException, InterruptedException {
+public void printeazaFoxIt(File pdfFile, int nrExemplare) throws IOException, InterruptedException {
         if (!pdfFile.exists()) {
             throw new IOException("Fișierul PDF nu a fost găsit la calea: " + pdfFile.getAbsolutePath());
         }
         String foxitPath = "C:\\Program Files (x86)\\Foxit Software\\Foxit PDF Reader\\FoxitPDFReader.exe";
         // Executăm comanda pentru fiecare exemplar în parte
-        for (int i = 0; i < numarCopii; i++) {
+        for (int i = 0; i < nrExemplare; i++) {
             // Folosim ProcessBuilder (recomandat Java 18+) pentru a evita Runtime.exec
             ProcessBuilder pb = new ProcessBuilder(
                 foxitPath, 
@@ -70,14 +76,14 @@ public void printeazaFoxIt(File pdfFile, int numarCopii) throws IOException, Int
             }
 
             // O mică pauză de 500ms între copii pentru a preveni suprapunerea în spooler
-            if (numarCopii > 1) {
+            if (nrExemplare > 1) {
                 Thread.sleep(1000);
             }
         }
     }
 
 
-public void printeazaCuFoxit(File pdfFile, int numarCopii) throws IOException, InterruptedException {
+public void printeazaCuFoxit(File pdfFile, int nrExemplare) throws IOException, InterruptedException {
   //  String foxitPath = "C:\\Program Files (x86)\\Foxit Software\\Foxit PDF Reader\\FoxitPDFReader.exe";
   String foxitPath = config.getFoxitPath();
     
@@ -87,7 +93,7 @@ public void printeazaCuFoxit(File pdfFile, int numarCopii) throws IOException, I
                         pdfFile.getAbsolutePath(), 
                         AppConstants.TARGET_PRINTER);
     System.out.println("Executam comanda "+command);
-    for (int i = 0; i < numarCopii; i++) {
+    for (int i = 0; i < nrExemplare; i++) {
         Runtime.getRuntime().exec(command).waitFor(); // Așteptăm 1 secundă între comenzi pentru a evita suprasolicitarea
         Thread.sleep(2000);
     }

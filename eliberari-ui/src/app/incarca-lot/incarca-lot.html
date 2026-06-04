@@ -1,17 +1,30 @@
 <div class="main">
 <span><b> Tiparire lot documente director</b></span>
 <span>
-Se verifica in interfata Trimitere catre eliberare daca pentru cererile mod eliberare Ghiseu/Posta/Curier nu avem nimic cu rosu si avem exact numarul de cereri de pe lista noastra <br>
-Se va descarca lot din SII, interfata <i>Descarcare/Incarcare doc.diretor</i>, lot cu aceste cereri, <b> cu bifa Include FI</b>
+In interfata SII->Trimitere_catre_eliberare verificam daca avem toate actele generate corect (fara rosu si altele)<br>
+Se va descarca lot din SII, interfata <i>Descarcare/Incarcare doc.diretor</i>, lot cu aceste cereri, <b> cu bifa Include FI</b><br>
+Se incarca lotul si va da Tipareste. <br>
+Acest buton este activ doar daca este selectat lot in lista de mai jos (detalii lot in partea de jos)
 </span>
+
   <div class="incarca">
-    <label class="custom-file-input">
-      <input type="file" accept=".zip" #fileInput (change)="onFisLotSelected($event)" />
+    <label class="custom-file-input" [class.disabled]="isUploading()">
+      <input 
+        type="file" 
+        accept=".zip" 
+        #fileInput 
+        [disabled]="isUploading()"
+        (change)="onFisLotSelected($event)" />
       <span class="file-icon">📁</span>
-      <span class="file-name">{{ selectedFisLot()?.name || 'Selecteaza fișier Lot zip' }}</span>
+      <span class="file-name">
+        {{ isUploading() ? 'Se încarcă...' : 'Încarcă lot ZIP' }}
+      </span>
     </label>
-    <button [disabled]="!selectedFisLot() || isUploading()" (click)="uploadFile()">
-      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă lot ZIP si tipărește' }}
+
+
+    
+    <button [disabled]="!selectedLot() || isPrinting()" (click)="tipareste()">
+      {{ isPrinting() ? 'Se tipărește...' : selectedLot() ? ' Tipărește' : ' Tipărește - selecteza întâi lotul'}}
     </button>
   </div>
 

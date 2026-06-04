@@ -1,28 +1,28 @@
 <div class="main">
-  <span><b> Separare si redenumire document director scanat</b></span>
-  Se selecteaza intai lotul din Liste disponibile (incarcat anterior din zip).<br>
-  Dupa incarcare, va aparea pdf-ul in previzualizare partea drepta a ecranului.<br>
-  Cand se selecteaza un lot, sub el avem continutul detaliat cereri si actele pe care le contine
-  Se poate da click pe fiecare act in parte si va sari la pagina corespunzatoarea din pdf
-  Sistemul va marca ca ignorate paginile albe din varianta scanata (linie obliga  rosie pe pagina), dar recunoasterea nu este 100%.
-  Aici intervine verificarea. Trebuie sa verificati daca actul din lista sare la pagina scanata corespunzatoare, in special ultimele
-  Daca nu, trebuie verificata mai sus daca nu cumva sunt marcaje de ignorare gresite. Cu click se marcheaza/demarcheaza o pagina de la ignorare
+  <span><b> Separare și redenumire document director scanat</b></span>
+  Se selectează întâi lotul din Loturi disponibile (încarcat în prima etapa).<br>
+  După încărcare, va aparea pdf-ul în previzualizare partea dreapta a ecranului.<br>
+  Se poate da click în tabelul de jos, în dreptul cererii și tip act și acesta va sări la pagina corespunzatoare în doc. scanat.<br>
+  Sistemul va marca implicit paginile albe (linie obligă-roșie peste pagina) să le ignore, dar recunoașterea nu este 100%.<br>
+  Astfel trebuie verificat dacă coresponedența act si pagină din documentul scanat este corectă.<br>
+  Dacă nu, trebuie verificate care pagini nu sunt marcate/nemarcate corect, și prin click pe pagina se marchează/demarchează acestea.
+  
   <div class="incarca">
-    <label class="custom-file-input">
-      <input type="file" accept=".pdf" #fileInput (change)="onFisScanSelected($event)" />
+    <label class="custom-file-input" [class.disabled]="!selectedLot() || isUploading()">
+      <input 
+        type="file" 
+        accept=".pdf" 
+        #fileInput 
+        [disabled]="!selectedLot() ||isUploading()"
+        (change)="onFisScanSelected($event)" />
       <span class="file-icon">📁</span>
-      <span class="file-name">{{ selectedFisScan()?.name || 'Selecteaza fișier Scanat' }}</span>
+      <span class="file-name">{{ isUploading() ? 'Se încarcă...' : 'Încarcă fișier Scanat' }}</span>
     </label>
-    <button [disabled]="!selectedFisScan() || isUploading()" (click)="uploadScan()">
-      {{ isUploading() ? 'Se încarcă...' : '📤 Încarcă pdf scanat' }}
+    <button [disabled]="!selectedLot() || isSplitting() || !this.denumireLot()" (click)="separaPdfScanat()">
+      {{ isSplitting() ? 'Se separă...' : ' Separă pdf scanat' }}
     </button>
   </div>
 
-  <div class="separa">
-    <button [disabled]="isSplitting()" (click)="separaPdfScanat()">
-      {{ isSplitting() ? 'Se separă...' : '📤 Separă pdf scanat' }}
-    </button>
-  </div>  
 
   <app-list-loturi></app-list-loturi>
 

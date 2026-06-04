@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Act {
     private final long numar;
     private final TipAct tipAct;
-    private final String denumire_fisier;
+    private final String denumireFisier;
     private String data="";
     private int nrPagini = 0;
 
@@ -14,13 +14,13 @@ public class Act {
     public Act(long numar, TipAct tipPagina, String denumire) {
         this.numar = numar;
         this.tipAct = tipPagina;
-        this.denumire_fisier = denumire;
+        this.denumireFisier = denumire;
     }
 
     public Act(long numar, TipAct tipAct, String denumire_fisier, int nrPagini){
         this.numar = numar;
         this.tipAct = tipAct;   
-        this.denumire_fisier = denumire_fisier;
+        this.denumireFisier = denumire_fisier;
         this.nrPagini = nrPagini;   
     }
 
@@ -32,13 +32,13 @@ public class Act {
                @JsonProperty("nrPagini") int nrPagini){
         this.numar = numar;
         this.tipAct = tipAct;   
-        this.denumire_fisier = denumire_fisier;
+        this.denumireFisier = denumire_fisier;
         this.nrPagini = nrPagini;   
         this.data = data;
     }
 
     public TipAct getTipAct() { return tipAct; }
-    public String getDenumire_fisier() { return denumire_fisier; }
+    public String getDenumireFisier() { return denumireFisier; }
     public int getNrPagini() { return nrPagini; }
     public long getNumar() { return numar; }
     public String getData() {return data;}

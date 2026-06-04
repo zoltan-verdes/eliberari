@@ -13,17 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import ro.onrc.eliberari.model.Act;
-import ro.onrc.eliberari.model.Cerere;
 import ro.onrc.eliberari.model.CerereSimpla;
 import ro.onrc.eliberari.model.InfoLot;
 import ro.onrc.eliberari.model.StivaCereri;
-import ro.onrc.eliberari.processor.AppRepository;
-import ro.onrc.eliberari.processor.ProcesorDocumente;
 
 @Service
 public class LotRegistry {
     AppRepository repository;
-    ProcesorDocumente procesor;
     private final Map<String, List<Act>> internalStorage = new ConcurrentHashMap<>();
     private final Map<String, List<CerereSimpla>> viewStorage = new ConcurrentHashMap<>();
     private final Map<String, boolean[]> pageStatuses = new ConcurrentHashMap<>();
@@ -31,9 +27,8 @@ public class LotRegistry {
     private final Map<String, InfoLot> infoLot = new ConcurrentHashMap<>();
 
 
-public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
+public LotRegistry(AppRepository repository) {
         this.repository = repository;
-        this.procesor = procesor;
         incarcaLoturileDePeDisc();
     }
 
@@ -54,18 +49,16 @@ public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
     }
 
 
-    public void registerNewLot(File lotZip) throws IOException {
-        String lotId = lotZip.getName().replace(".zip", "");
-        System.out.println("Adaugam lotul "+lotId);
-        List<Act> internal = procesor.proceseazaLot(lotZip);
-        internalStorage.put(lotId,internal);
+    public void registerNewLot(String idLot, List<Act> acte) throws IOException {
+        System.out.println("Adaugam lotul "+idLot);
+        internalStorage.put(idLot, acte);
 
         // 2. Din datele brute, extragi doar "esența" pentru UI (Totaluri, Tabel)
-        StivaCereri stiva = new StivaCereri(internal);
-        viewStorage.put(lotId, stiva.getLista());
+        StivaCereri stiva = new StivaCereri(acte);
+        viewStorage.put(idLot, stiva.getLista());
 
-        infoLot.put(lotId, stiva.getInfo());
-        repository.salveazaListaNoua(internal, lotId);        
+        infoLot.put(idLot, stiva.getInfo());
+        repository.salveazaListaNoua(acte, idLot);        
     }
 
     public boolean exists(String lotId){ return internalStorage.containsKey(lotId);     }
@@ -75,6 +68,8 @@ public LotRegistry(AppRepository repository, ProcesorDocumente procesor) {
     public List<CerereSimpla> getLotForUI(String lotId) { return viewStorage.get(lotId); }
 
     public List<Act> getLotForProcessing(String lotId) { return internalStorage.get(lotId); }
+
+    public InfoLot getInfoLot(String lotId) { return infoLot.get(lotId); }
 
     public void savePageStatuses(String lotId, boolean[] statuses) { pageStatuses.put(lotId, statuses); }
 

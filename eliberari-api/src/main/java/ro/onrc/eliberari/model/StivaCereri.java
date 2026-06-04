@@ -26,6 +26,7 @@ public class StivaCereri {
     public void addAct(Act act){
 //        System.out.println("Adaugam actul "+act.getNumar()+"-"+act.getTipAct());
         if ( act==null) return;
+        if ( act.getTipAct() != TipAct.CI && act.getTipAct() != TipAct.CIM && act.getTipAct() != TipAct.Constatator) return;
         nr_acte++;
         if (lista.size()>0 && lista.getLast().getNumar()==act.getNumar()){
             lista.getLast().addAct(act);

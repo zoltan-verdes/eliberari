@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, NgZone, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ListLoturi } from './../list-loturi/list-loturi';
 import { LogService } from '../log.service';
 import { NotificationService } from '../notification.service';
@@ -12,47 +12,23 @@ import { NotificationService } from '../notification.service';
 })
 export class IncarcaLot {
   private http = inject(HttpClient);
-  private zone = inject(NgZone);
   private logService = inject(LogService);
   logs = this.logService.logs;
   isProcessing = signal(false);
   private notif = inject(NotificationService);
 
   selectedFisLot = signal<File | null>(null);
-  selectedFisScan = signal<File | null>(null);
   isUploading = signal(false);
+  isPrinting = signal(false);
   //mesaj = signal<string | null>(null);
   // Adaugă noi semnale pentru starea PDF-ului
   selectedPdfFile = signal<File | null>(null);
-  
 
 
+  //@ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
+  listLoturiComp = viewChild(ListLoturi);
+  selectedLot = computed(() => this.listLoturiComp()?.lotActiv());
 
-  @ViewChild(ListLoturi) listLoturiComp!: ListLoturi;
-
-
-  imagineCodBare = signal<string | null>(null);
-
-  aduImaginea() {
-    const eventSource = new EventSource('/api/ocr/stream-image');
-
-    eventSource.addEventListener('image-data', (event: any) => {
-      this.zone.run(() => {
-        if (!event.data || event.data === 'null') {
-          console.log('Imagine neidentificată');
-          this.imagineCodBare.set(null);
-        } else {
-          // Salvăm string-ul base64 în signal
-          this.imagineCodBare.set(`data:image/png;base64,${event.data}`);
-        }
-        eventSource.close(); // Închidem după ce am primit imaginea
-      });
-    });
-
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
-  }
 
   onFisLotSelected(event: any) {
     const fisLot: File | undefined = event.target.files?.[0];
@@ -62,6 +38,7 @@ export class IncarcaLot {
 
     if (fisLot && isZip) {
       this.selectedFisLot.set(fisLot);
+      this.uploadFile();
     } else {
       alert('Selectați un fișier zip valid. Tip fișier selectat: ' + (fisLot?.type || 'necunoscut'));
       this.selectedFisLot.set(null);
@@ -92,13 +69,12 @@ this.http.post<string[]>('/api/ocr/upload', formData).subscribe({
         console.log('File uploaded:', response);
         this.logService.add('Fișier '+' încărcat: ' + fis()!.name);
         this.logService.addLogs(response);
-        const [primul, ...loguri] =response;
+        const [denumireLot, ...loguri] =response;
         if (loguri.length > 0) {
           this.notif.afiseaza(loguri[loguri.length - 1],'success');
-//          this.mesaj.set(loguri[loguri.length - 1]);
-//          setTimeout(() => this.mesaj.set(null), 5000);
         } 
-       this.listLoturiComp.adauga(primul);
+       this.listLoturiComp()?.adauga(denumireLot);
+       this.listLoturiComp()?.selecteazaLot(denumireLot);
 
 
       this.isUploading.set(false);
@@ -106,13 +82,6 @@ this.http.post<string[]>('/api/ocr/upload', formData).subscribe({
         // Reset the input
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-
-
-/*
-      // Presupunem că response.ignoredPages este un array de boolean
-      this.pageStatuses.set(response.ignoredPages);
-*/
-
 
     },
     error: (error) => {
@@ -124,7 +93,19 @@ this.http.post<string[]>('/api/ocr/upload', formData).subscribe({
 }  
 
 tipareste(){
-  console.log("tiparim");
+  console.log("tiparim lot zip "+this.selectedLot());
+  this.isPrinting.set(true);
+  this.http.post(`/api/ocr/tipareste-lot-dir?nume=${this.selectedLot()}`, {}, {responseType: 'text'}).subscribe({
+    next: (response) => {
+      console.log('Operatie de tiparire a lotului ' + this.selectedLot() + ' s-a finalizat cu succes:');
+      this.notif.afiseaza('Lotul '+this.selectedLot()+' a fost tipărit cu succes!','success');
+      this.isPrinting.set(false);
+    },
+    error: (err) => {
+        alert('Au fost intampinate probeleme la listarea lotului '+this.selectedLot());
+        console.error('Eroare severă:', err.error);
+    }
+  });
 }
 
 }

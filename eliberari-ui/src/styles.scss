@@ -1,1 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
+
+  .custom-file-input {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 8px;
+    padding: 2px 12px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #dee5ec;
+
+    cursor: pointer;
+    width: 13rem;
+    text-transform: none;
+
+    input { display: none; }
+
+    .file-icon { font-size: 1.2em; }
+
+    .file-label { font-weight: 600; }
+
+    &:hover {
+        background: #8c99a8;
+        color: white;
+    }
+
+    &.disabled { background: #ccc; color: white; cursor: not-allowed; }
+  }
+
+  button {
+    width: 10em;
+    padding: 5px;
+    background-color: #dee5ec;
+    border: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover {
+      background: #8c99a8; color: white;
+    }
+    &:disabled { background: #ccc; color: white; cursor: not-allowed; }
+  }
