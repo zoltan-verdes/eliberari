@@ -59,6 +59,11 @@ public class Cerere implements Comparable<Cerere> {
     public boolean getCIM() { return cim; }
     public int getCC() { return cc; }
     public int getNrPagTotal() { return pagTotal; }
+
+    public void setInch(boolean inch) { this.inch = inch; }
+    public void setCI(boolean ci) { this.ci = ci; } 
+    public void setCIM(boolean cim) { this.cim = cim; }
+    public void addCC() { this.cc++; this.pagTotal++; }
     
     @Override
     public int compareTo(Cerere o) {

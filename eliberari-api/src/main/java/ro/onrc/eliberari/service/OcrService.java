@@ -10,7 +10,7 @@ import ro.onrc.eliberari.config.AppConstants;
 
 @Service
 public class OcrService {
-    private long index = 1;
+//    private long index = 1;
 
 
     public OcrService() {

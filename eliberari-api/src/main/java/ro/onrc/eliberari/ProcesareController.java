@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ro.onrc.eliberari.config.AppConfig;
 import ro.onrc.eliberari.model.CerereSimpla;
 import ro.onrc.eliberari.processor.ProcesorLotDirector;
-import ro.onrc.eliberari.processor.ProcesorScanat;
+import ro.onrc.eliberari.processor.ProcesorDocumentScanatOCR;
 import ro.onrc.eliberari.service.AppRepository;
 import ro.onrc.eliberari.service.LotRegistry;
 
@@ -35,14 +35,14 @@ import java.util.List;
 public class ProcesareController {
 
     private final ProcesorLotDirector procesorLotDirector;
-    private final ProcesorScanat procesorScanat;
+    private final ProcesorDocumentScanatOCR procesorScanat;
     private final AppConfig config;
     private final LotRegistry lotRegistry;
     
 
 
 
-    public ProcesareController(ProcesorLotDirector procesor, AppConfig config, LotRegistry lotRegistry, ProcesorScanat procesorScanat) {
+    public ProcesareController(ProcesorLotDirector procesor, AppConfig config, LotRegistry lotRegistry, ProcesorDocumentScanatOCR procesorScanat) {
         this.procesorLotDirector = procesor;
         this.config = config;
         this.lotRegistry = lotRegistry;
@@ -88,7 +88,7 @@ public class ProcesareController {
         System.out.println("Fișier primit: " + file.getOriginalFilename());
         try {            
             File destFile = lotRegistry.setFisierScanat(file);
-            response = procesorScanat.proceseazaDocumentScanat(destFile);
+            response = procesorLotDirector.proceseazaDocumentScanat(destFile);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println("Eroare la salvarea fișierului: " + e.getMessage());
@@ -109,7 +109,7 @@ public class ProcesareController {
             }
 
             lotRegistry.savePageStatuses(request.numeLot(), request.statusChanged());
-            String mesaj = procesorScanat.desparteFisierScanat(request.numeLot(), request.statusChanged());
+            String mesaj = procesorLotDirector.desparteFisierScanat(request.numeLot(), request.statusChanged());
             
             return ResponseEntity.ok().body(mesaj);
         } catch (Exception e) {
